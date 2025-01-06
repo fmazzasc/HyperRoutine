@@ -134,7 +134,7 @@ tree_hdl = TreeHandler(input_files_name, tree_name, folder_name='DF*')
 # tree_hdl = TreeHandler(input_files_name, tree_name)
 
 df = tree_hdl.get_data_frame()
-df = utils.correct_and_convert_df(df, calibrate_he_momentum, mc, is_h4l)
+utils.correct_and_convert_df(df, calibrate_he_momentum, mc, is_h4l)
 
 
 ############# Apply pre-selections to MC #############
@@ -183,7 +183,7 @@ utils.fill_th1_hist(hRadius, df, 'fDecRad')
 utils.fill_th1_hist(hDecLen, df, 'fDecLen')
 utils.fill_th1_hist(hNTPCclus, df, 'fNTPCclusHe')
 utils.fill_th2_hist(h2NTPCclusPt, df, 'fPt', 'fNTPCclusHe')
-utils.fill_th1_hist(hNSigHe, df, 'fNSigmaHe')
+utils.fill_th1_hist(hNSigHe, df, 'fNSigmaHe3')
 utils.fill_th1_hist(hMass3LH, df, 'fMassH3L')
 utils.fill_th1_hist(hMass4LH, df, 'fMassH4L')
 utils.fill_th2_hist(h2Mass3LHVvsMass4LH, df, 'fMassH3L', 'fMassH4L')
@@ -193,8 +193,8 @@ utils.fill_th2_hist(h2MassDCADaughters, df, 'fDcaV0Daug', mass_string)
 utils.fill_th2_hist(h2MassDCAHePv, df, 'fDcaHe', mass_string)
 utils.fill_th2_hist(h2MassDCAPiPv, df, 'fDcaPi', mass_string)
 utils.fill_th2_hist(h2MassPt, df, 'fPt', mass_string)
-utils.fill_th2_hist(h2Mass4LHnSigmaHe, df, 'fNSigmaHe', mass_string)
-utils.fill_th2_hist(h2NSigHe3VsMom, df, 'fTPCSignMomHe3', 'fNSigmaHe')
+utils.fill_th2_hist(h2Mass4LHnSigmaHe, df, 'fNSigmaHe3', mass_string)
+utils.fill_th2_hist(h2NSigHe3VsMom, df, 'fTPCSignMomHe3', 'fNSigmaHe3')
 utils.fill_th2_hist(h2NSigHe4VsMom, df, 'fTPCSignMomHe3', 'fNSigmaHe4')
 utils.fill_th2_hist(h2TPCSigHe3VsMom, df, 'fTPCmomHe', 'fTPCsignalHe')
 utils.fill_th2_hist(h2Mass3HLvsPt, df, 'fPt', 'fMassH3L')
@@ -340,7 +340,7 @@ if do_signal_extraction:
     signal_extraction = SignalExtraction(df)
     signal_extraction.bkg_fit_func = "pol2"
     signal_extraction.signal_fit_func = "gaus"
-    signal_extraction.n_bins_data = 30
+    signal_extraction.n_bins_data = 50
     signal_extraction.n_evts = utils.getNEvents(input_analysis_results_file, is_trigger) if input_analysis_results_file != '' else 0
     signal_extraction.matter_type = is_matter
     signal_extraction.performance = False
@@ -349,4 +349,4 @@ if do_signal_extraction:
     signal_extraction.process_fit()
 f.Close()
 
-print("Number of events analysed: ", utils.getNEvents(input_analysis_results_file, is_trigger))
+# print("Number of events analysed: ", utils.getNEvents(input_analysis_results_file, is_trigger))

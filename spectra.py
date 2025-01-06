@@ -109,8 +109,6 @@ class SpectraMaker:
 
             # compute efficiency
             eff = len(bin_mc_reco_hdl) / len(bin_mc_hdl)
-            print(mc_bin_sel)
-            print("bin low", bin[0], "bin high", bin[1], "efficiency", eff)
             self.efficiency.append(eff)
 
             signal_extraction = SignalExtraction(bin_data_hdl, bin_mc_hdl_sign_extr)

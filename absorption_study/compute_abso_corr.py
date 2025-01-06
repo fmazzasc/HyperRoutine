@@ -43,7 +43,7 @@ h_abso_pt = {"mat": ROOT.TH1F('h_abso_pt_mat', '; p_{T} (GeV/c)', len(pt_bins)-1
 
 
 # mc input file
-mc_file = '../../results/absorption/absorption_tree_x5.root'
+mc_file = '../../results/absorption/absorption_tree_x1.5.root'
 tree = uproot.open(mc_file)['he3candidates'].arrays(library='pd')
 # reweight MC pT spectrum
 spectra_file = ROOT.TFile.Open('../utils/heliumSpectraMB.root')
@@ -75,7 +75,7 @@ for (pt, eta, phi, absoX, absoY, absoZ, process, pdg) in zip(tree['pt'], tree['e
         h_abso_pt[mat_type].Fill(pt, pt_weight)
 
 
-outfile = ROOT.TFile('../../results/absorption/absorption_histos_x5.root', 'RECREATE')
+outfile = ROOT.TFile('../../results/absorption/absorption_histos_x1.5.root', 'RECREATE')
 
 for mat_type in ['mat', 'antimat']:
     h_he_rad[mat_type].Write()

@@ -108,8 +108,6 @@ class SignalExtraction:
             n1.setConstant()
             n2.setConstant()
             sigma.setRange(self.sigma_range_mc_to_data[0]*sigma.getVal(), self.sigma_range_mc_to_data[1]*sigma.getVal())
-            print("sigma range set to: ", self.sigma_range_mc_to_data[0]*sigma.getVal(), self.sigma_range_mc_to_data[1]*sigma.getVal())
-            print("sigma: ", sigma.getVal())
             self.mc_frame_fit = mass.frame(self.n_bins_mc)
             self.mc_frame_fit.SetName(self.mc_frame_fit_name)
             mass_roo_mc.plotOn(self.mc_frame_fit, ROOT.RooFit.Name('mc'), ROOT.RooFit.DrawOption('p'))
@@ -143,7 +141,6 @@ class SignalExtraction:
         fit_pars = self.pdf.getParameters(self.roo_dataset)
         sigma_val = fit_pars.find('sigma').getVal()
         sigma_val_error = fit_pars.find('sigma').getError()
-        print("sigma: ", sigma_val, "+/-", sigma_val_error)
         mu_val = fit_pars.find('mu').getVal()
         mu_val_error = fit_pars.find('mu').getError()
 
