@@ -254,7 +254,7 @@ def correct_and_convert_df(df, calibrate_he3_pt = False, isMC=False, isH4L=False
         df['fHePIDHypo'] = np.right_shift(df['fFlags'], 4)
         df['fPiPIDHypo'] = np.bitwise_and(df['fFlags'], 0b1111)
     
-    if not 'fTPCChi2He' in df.columns:
+    if not 'fTPCChi2He' in df.columns or isMC: ## chi2 for MC is not reliable
         ## set dummy column to one
         df['fTPCChi2He'] = 1
 

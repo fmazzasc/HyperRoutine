@@ -36,6 +36,7 @@ class SpectraMaker:
         self.raw_counts_err = []
         self.chi2 = []
         self.efficiency = []
+        self.efficiency_err = []
 
         self.corrected_counts = []
         self.corrected_counts_err = []
@@ -110,6 +111,7 @@ class SpectraMaker:
             # compute efficiency
             eff = len(bin_mc_reco_hdl) / len(bin_mc_hdl)
             self.efficiency.append(eff)
+            self.efficiency_err.append(np.sqrt(eff * (1 - eff) / len(bin_mc_hdl)))
 
             signal_extraction = SignalExtraction(bin_data_hdl, bin_mc_hdl_sign_extr)
 
@@ -190,6 +192,7 @@ class SpectraMaker:
             self.h_raw_counts.SetBinContent(ibin + 1, self.raw_counts[ibin]/bin_width)
             self.h_raw_counts.SetBinError(ibin + 1, self.raw_counts_err[ibin]/bin_width)
             self.h_efficiency.SetBinContent(ibin + 1, self.efficiency[ibin])
+            self.h_efficiency.SetBinError(ibin + 1, self.efficiency_err[ibin])
 
             absorption_corr = 1
             if self.h_absorption is not None:

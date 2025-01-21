@@ -3,7 +3,6 @@ is_h4l: False
 is_trigger: True
 input_files:
   [
-    "/data3/fmazzasc/hyp_run_3/pp2023/skimmed/AO2D.root",
     "/data3/fmazzasc/hyp_run_3/pp2024/ag/AO2D.root",
     "/data3/fmazzasc/hyp_run_3/pp2024/aj/AO2D.root",
     "/data3/fmazzasc/hyp_run_3/pp2024/af/AO2D.root",
@@ -31,12 +30,12 @@ selection:
     # "fDcaHe": "abs(fDcaHe) > 0.004",
     # "fTrackedClSize": "fTrackedClSize > 0",
     # "fDcaPi": "abs(fDcaPi) > 0.05",
-    "fTPCChi2He": "fTPCChi2He > 0.5",
+    # "fTPCChi2He": "fTPCChi2He > 0.5",
     "fCosPA": "fCosPA > 0.995",
     "fNSigmaHe": "fNSigmaHe > -3",
     # "fTPCsignalPi": "fTPCsignalPi < 1000.",
     "fTPCmomHe": "fTPCmomHe > 0.5",
-    "fAvgClSizeCosLambda": "fAvgClSizeCosLambda > 5",
+    # "fAvgClSizeCosLambda": "fAvgClSizeCosLambda > 5",
 
   }
 is_matter: "antimatter"

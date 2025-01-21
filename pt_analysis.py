@@ -126,7 +126,6 @@ he3_spectrum = spectra_file.Get('fCombineHeliumSpecLevyFit_0-100')
 spectra_file.Close()
 utils.reweight_pt_spectrum(mc_hdl, 'fAbsGenPt', he3_spectrum)
 mc_hdl.apply_preselections('rej==True')
-# mc_hdl.apply_preselections('fGenCt < 28.5 or fGenCt > 28.6')
 mc_reco_hdl = mc_hdl.apply_preselections('fIsReco == 1', inplace=False)
 mc_hdl_evsel = mc_hdl.apply_preselections('fIsSurvEvSel==True', inplace=False)
 
