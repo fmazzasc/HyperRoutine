@@ -63,16 +63,16 @@ class SignalExtraction:
         # define signal and bkg variables
         if self.is_3lh:
             mass = ROOT.RooRealVar('m', self.inv_mass_string, 2.96, 3.04, 'GeV/c^{2}')
-            mu = ROOT.RooRealVar('mu', 'hypernucl mass', 2.985, 2.992, 'GeV/c^{2}')
+            mu = ROOT.RooRealVar('mu', 'hypernucl mass', 2.988, 2.992, 'GeV/c^{2}')
         else:
             mass = ROOT.RooRealVar('m', self.inv_mass_string, 3.89, 3.97, 'GeV/c^{2}')
             mu = ROOT.RooRealVar('mu', 'hypernucl mass', 3.9, 3.95, 'GeV/c^{2}')
 
-        sigma = ROOT.RooRealVar('sigma', 'hypernucl width', 0.001, 0.0024, 'GeV/c^{2}')
-        a1 = ROOT.RooRealVar('a1', 'a1', 0.7, 5.)
-        a2 = ROOT.RooRealVar('a2', 'a2', 0.7, 5.)
-        n1 = ROOT.RooRealVar('n1', 'n1', 0., 5.)
-        n2 = ROOT.RooRealVar('n2', 'n2', 0., 5.)
+        sigma = ROOT.RooRealVar('sigma', 'hypernucl width', 0.0011, 0.0024, 'GeV/c^{2}')
+        a1 = ROOT.RooRealVar('a1', 'a1', 0., 5.)
+        a2 = ROOT.RooRealVar('a2', 'a2', 0., 5.)
+        n1 = ROOT.RooRealVar('n1', 'n1', 0., 10.)
+        n2 = ROOT.RooRealVar('n2', 'n2', 0., 10.)
         c0 = ROOT.RooRealVar('c0', 'constant c0', -1., 1)
         c1 = ROOT.RooRealVar('c1', 'constant c1', -1., 1)
 
@@ -107,7 +107,7 @@ class SignalExtraction:
             a2.setConstant()
             n1.setConstant()
             n2.setConstant()
-            sigma.setRange(self.sigma_range_mc_to_data[0]*sigma.getVal(), self.sigma_range_mc_to_data[1]*sigma.getVal())
+            sigma.setRange(sigma.getVal(), self.sigma_range_mc_to_data[1]*sigma.getVal())
             self.mc_frame_fit = mass.frame(self.n_bins_mc)
             self.mc_frame_fit.SetName(self.mc_frame_fit_name)
             mass_roo_mc.plotOn(self.mc_frame_fit, ROOT.RooFit.Name('mc'), ROOT.RooFit.DrawOption('p'))

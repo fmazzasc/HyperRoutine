@@ -257,6 +257,9 @@ def correct_and_convert_df(df, calibrate_he3_pt = False, isMC=False, isH4L=False
     if not 'fTPCChi2He' in df.columns or isMC: ## chi2 for MC is not reliable
         ## set dummy column to one
         df['fTPCChi2He'] = 1
+    
+    ## set Nan chi2 values to one
+    df['fTPCChi2He'] = df['fTPCChi2He'].replace(np.nan, 1)
 
     # correct 3He momentum    
 

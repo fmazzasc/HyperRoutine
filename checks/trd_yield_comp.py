@@ -12,10 +12,10 @@ x_err_stat = np.array([0.], dtype=np.float64)
 x_err = np.array([0.1], dtype=np.float64)
 
 
-yield_new = np.array([1.5e-08], dtype=np.float64)
+yield_new = np.array([1.42e-08], dtype=np.float64)
 yield_trd = np.array([2.1e-08], dtype=np.float64)
 
-yield_new_stat = np.array([0.2e-08], dtype=np.float64)
+yield_new_stat = np.array([0.1e-08], dtype=np.float64)
 yield_trd_stat = np.array([0.7e-08], dtype=np.float64)
 
 yield_new_syst = np.array([0.1e-08], dtype=np.float64)

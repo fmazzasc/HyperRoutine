@@ -57,6 +57,7 @@ signal_loss = config['signal_loss']
 do_syst = config['do_syst']
 n_trials = config['n_trials']
 absorption_syst = config['absorption_syst']
+br_syst = config['br_syst']
 
 
 matter_options = ['matter', 'antimatter', 'both']
@@ -94,8 +95,8 @@ absorption_histo = None
 
 if absorption_histo_file != '':
     absorption_file = ROOT.TFile.Open(absorption_histo_file)
-    absorption_histo_mat = absorption_file.Get('h_abso_frac_pt_mat')
-    absorption_histo_anti = absorption_file.Get('h_abso_frac_pt_antimat')
+    absorption_histo_mat = absorption_file.Get('x1.5/h_abso_frac_pt_mat')
+    absorption_histo_anti = absorption_file.Get('x1.5/h_abso_frac_pt_antimat')
     absorption_histo_mat.SetDirectory(0)
     absorption_histo_anti.SetDirectory(0)
 
@@ -190,6 +191,9 @@ spectra_maker.make_histos()
 h3l_spectrum = ROOT.TF1('mtexpo', '[2]*x*exp(-TMath::Sqrt([0]*[0]+x*x)/[1])', 0.1, 6)
 h3l_spectrum.FixParameter(0, 2.99131)
 h3l_spectrum.SetParameter(1, 0.5199)
+h3l_spectrum.SetParLimits(1, 0.1, 1)
+h3l_spectrum.SetParameter(2, 1.e-05)
+h3l_spectrum.SetParLimits(2, 1.e-08, 1)
 h3l_spectrum.SetLineColor(kOrangeC)
 spectra_maker.fit_func = h3l_spectrum
 spectra_maker.fit_options = 'MIQ+'
@@ -205,8 +209,8 @@ final_syst_rms = final_stat.Clone('hSystRMS')
 final_syst_rms.SetLineColor(ROOT.kAzure + 2)
 final_syst_rms.SetMarkerColor(ROOT.kAzure + 2)
 
-std_yield = spectra_maker.fit_func.GetParameter(0)
-std_yield_err = spectra_maker.fit_func.GetParError(0)
+std_yield = spectra_maker.fit_func.Integral(0, 10)
+std_yield_err = spectra_maker.fit_func.IntegralError(0, 10)
 
 yield_dist = ROOT.TH1D('hYieldSyst', ';dN/dy ;Counts', 40, 1.e-08, 2.e-08)
 yield_prob = ROOT.TH1D('hYieldProb', ';prob. ;Counts', 100, 0, 1)
@@ -361,15 +365,17 @@ for i_bin in range(0, len(spectra_maker.bins) - 1):
     syst_mu = fit_func.GetParameter(1)
     syst_mu_err = fit_func.GetParError(1)
 
-    syst_sigma = fit_func.GetParameter(2)
-    if absorption_syst is not None:
-        syst_sigma = np.sqrt(syst_sigma**2 + (std_corrected_counts[i_bin] * absorption_syst)**2)
-    final_syst.SetBinError(i_bin+1, syst_sigma)
 
+    syst_sigma = fit_func.GetParameter(2)
     syst_rms = h_pt_syst[i_bin].GetRMS()
-    if absorption_syst is not None:
-        syst_rms = np.sqrt(syst_rms**2 + (std_corrected_counts[i_bin] * absorption_syst)**2)
+
+    if absorption_syst is not None and br_syst is not None:
+        syst_sigma = np.sqrt(syst_sigma**2 + (std_corrected_counts[i_bin] * absorption_syst)**2 + (std_corrected_counts[i_bin] * br_syst)**2)
+        syst_rms = np.sqrt(syst_rms**2 + (std_corrected_counts[i_bin] * absorption_syst)**2 + (std_corrected_counts[i_bin] * br_syst)**2)
+
+    final_syst.SetBinError(i_bin+1, syst_sigma)
     final_syst_rms.SetBinError(i_bin+1, syst_rms)
+
 
     syst_sigma_err = fit_func.GetParError(2)
     fit_param = ROOT.TPaveText(0.7, 0.6, 0.9, 0.82, 'NDC')
