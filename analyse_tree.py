@@ -73,7 +73,7 @@ h2NTPCclusPt = ROOT.TH2F('h2NTPCclusPt', r';#it{p}_{T} (GeV/#it{c}); n TPC clust
 hMass3LH = ROOT.TH1F('h_3lh_mass', r'; m({}^{3}_{#Lambda}H) (GeV/#it{c})', 40, 2.96, 3.04)
 hMass4LH = ROOT.TH1F('h_4lh_mass', r';  m({}^{4}_{#Lambda}H) (GeV/#it{c^{2}})', 32, 3.87, 3.98)
 h2Mass3LHVvsMass4LH = ROOT.TH2F('h2Mass3LHVvsMass4LH', r'; m({}^{3}_{#Lambda}H) (GeV/#it{c}); m({}^{4}_{#Lambda}H) (GeV/#it{c})', 40, 2.96, 3.04, 32, 3.87, 3.98)
-hPtRec = ROOT.TH1F('hPtRec', r';#it{p}_{T} (GeV/#it{c})', 100, 0, 10)
+hPtRec = ROOT.TH1F('hPtRec', r';#it{p}_{T} (GeV/#it{c})', 8, np.array([1.4, 1.7, 2., 2.3, 2.6, 3, 3.5, 4., 5], dtype=np.float64))
 hCtRec = ROOT.TH1F('hCtRec', r';#it{c#tau} (cm)', 50, 0, 40)
 hRadius = ROOT.TH1F('hRadius', r';Radius (cm)', 100, 0, 40)
 hDecLen = ROOT.TH1F('hDecLen', r';Decay length (cm)', 100, 0, 40)
@@ -99,6 +99,7 @@ hHeMomTPCMinusMomGloHeHyp = ROOT.TH2F('hHeMomTPCMinusMomGloHeHyp', r';#it{p}^{gl
 h2MassV2 = ROOT.TH2F('h2MassV2', r';m({}^{3}_{#Lambda}H) (GeV/#it{c}); v2', 30, mass_low_limit, mass_high_limit, 500, -1, 1)
 hMeanV2VsMass = ROOT.TH1F('hMeanV2VsMass', r';m({}^{3}_{#Lambda}H) (GeV/#it{c}); #LT v2 #GT', 30, mass_low_limit, mass_high_limit)
 h2MassCosPA = ROOT.TH2F('h2MassCosPA', r';cos(#theta_{PA}); m({}^{3}_{#Lambda}H) (GeV/#it{c})', 100, 0.99, 1, 50, mass_low_limit, mass_high_limit)
+h2PtCosPA = ROOT.TH2F('h2PtCosPA', r';#it{p}_{T} (GeV/#it{c}); cos(#theta_{PA})', 10, 1, 6, 100, 0.98, 1)
 h2MassDecLen = ROOT.TH2F('h2MassDecLen', r';Decay length (cm); m({}^{3}_{#Lambda}H) (GeV/#it{c})', 100, 0, 40, 50, mass_low_limit, mass_high_limit)
 h2MassDCADaughters = ROOT.TH2F('h2MassDCADaughters', r';DCA daughters (cm); m({}^{3}_{#Lambda}H) (GeV/#it{c})', 200, 0, 0.3, 50, mass_low_limit, mass_high_limit)
 h2MassDCAHePv = ROOT.TH2F('h2MassDCAHe', r';DCA He3 PVs (cm); m({}^{3}_{#Lambda}H) (GeV/#it{c})', 400, -2,2, 50, mass_low_limit, mass_high_limit)
@@ -107,7 +108,9 @@ h2MassPt = ROOT.TH2F('h2MassPt', r';#it{p}_{T} (GeV/#it{c}); m({}^{3}_{#Lambda}H
 h2MassPIDHypo = ROOT.TH2F('h2MassPIDHypo', r';Hypothesis; m({}^{3}_{#Lambda}H) (GeV/#it{c})', 16, 0.5, 16.5, 50, mass_low_limit, mass_high_limit)
 h2Mass4LHnSigmaHe = ROOT.TH2F('h2Mass4LHnSigmaHe', r';n_{#sigma}^{TPC}({}^{3}He); m({}^{4}_{#Lambda}H) (GeV/#it{c})', 50, -4, 4, 30, 3.89, 3.97)
 # for MC only
-hPtGen = ROOT.TH1F('hPtGen', r';#it{p}_{T}^{gen} (GeV/#it{c})', 100, 0, 10)
+hPtGen = ROOT.TH1F('hPtGen', r';#it{p}_{T}^{gen} (GeV/#it{c})', 8, np.array([1.4, 1.7, 2., 2.3, 2.6, 3, 3.5, 4., 5], dtype=np.float64))
+hPtGenFull = ROOT.TH1F('hPtGenFull', r';#it{p}_{T}^{gen} (GeV/#it{c})', 8, np.array([1.4, 1.7, 2., 2.3, 2.6, 3, 3.5, 4., 5], dtype=np.float64))
+
 hCtGen = ROOT.TH1F('hCtGen', r';#it{c}#tau (cm)', 50, 0, 40)
 hResolutionPt = ROOT.TH1F('hResolutionPt', r';(#it{p}_{T}^{rec} - #it{p}_{T}^{gen}) / #it{p}_{T}^{gen}', 50, -0.2, 0.2)
 hResolutionPtvsPt = ROOT.TH2F('hResolutionPtvsPt', r';#it{p}_{T}^{gen} (GeV/#it{c});(#it{p}_{T}^{rec} - #it{p}_{T}^{gen}) / #it{p}_{T}^{gen}', 50, 0, 5, 50, -0.2, 0.2)
@@ -140,16 +143,19 @@ utils.correct_and_convert_df(df, calibrate_he_momentum, mc, is_h4l)
 
 ############# Apply pre-selections to MC #############
 if mc:
-    mc_pre_sels = ''
+    mc_pre_sels = 'fIsSurvEvSel==True'
     spectra_file = ROOT.TFile.Open('utils/heliumSpectraMB.root')
     he3_spectrum = spectra_file.Get('fCombineHeliumSpecLevyFit_0-100')
     spectra_file.Close()
-    utils.reweight_pt_spectrum(df, 'fAbsGenPt', he3_spectrum)
-    mc_pre_sels += 'rej==True'
+    # utils.reweight_pt_spectrum(df, 'fAbsGenPt', he3_spectrum)
+    # mc_pre_sels += 'rej==True'
     if is_matter == 'matter':
         mc_pre_sels += 'and fGenPt>0'
     elif is_matter == 'antimatter':
         mc_pre_sels += 'and fGenPt<0'
+    
+    utils.fill_th1_hist(hPtGenFull, df, 'fAbsGenPt')
+    df.query(mc_pre_sels, inplace=True)
     ## fill histograms to be put at denominator of efficiency
     utils.fill_th1_hist(hPtGen, df, 'fAbsGenPt')
     utils.fill_th1_hist(hCtGen, df, 'fGenCt')
@@ -190,6 +196,7 @@ utils.fill_th1_hist(hMass3LH, df, 'fMassH3L')
 utils.fill_th1_hist(hMass4LH, df, 'fMassH4L')
 utils.fill_th2_hist(h2Mass3LHVvsMass4LH, df, 'fMassH3L', 'fMassH4L')
 utils.fill_th2_hist(h2MassCosPA, df, 'fCosPA', mass_string)
+utils.fill_th2_hist(h2PtCosPA, df, 'fPt', 'fCosPA')
 utils.fill_th2_hist(h2MassDecLen, df, 'fDecLen', mass_string)
 utils.fill_th2_hist(h2MassDCADaughters, df, 'fDcaV0Daug', mass_string)
 utils.fill_th2_hist(h2MassDCAHePv, df, 'fDcaHe', mass_string)
@@ -277,6 +284,7 @@ hMass4LH.Write()
 h2MassV2.Write()
 hMeanV2VsMass.Write()
 h2MassCosPA.Write()
+h2PtCosPA.Write()
 h2MassDecLen.Write()
 h2MassDCADaughters.Write()
 h2MassDCAHePv.Write()
@@ -318,15 +326,18 @@ if mc:
     hPtGen.Write()
     hCtGen.Write()
 
-    h_eff = hPtRec.Clone('hEfficiencyPt')
+    h_eff = utils.computeEfficiency(hPtGen, hPtRec, 'hEffPt')
     h_eff.SetTitle(';#it{p}_{T} (GeV/#it{c}); Efficiency')
-    h_eff.Divide(hPtGen)
     h_eff.Write()
 
     h_eff_ct = hCtRec.Clone('hEfficiencyCt')
     h_eff_ct.SetTitle(';#it{c#tau} (cm); Efficiency')
     h_eff_ct.Divide(hCtGen)
     h_eff_ct.Write()
+
+    h_sigloss = utils.computeEfficiency(hPtGenFull, hPtGen, 'hSigLoss')
+    h_sigloss.SetTitle(';#it{p}_{T} (GeV/#it{c}); Signal loss')
+    h_sigloss.Write()
 
 
     ### check if the gCt values are repeated

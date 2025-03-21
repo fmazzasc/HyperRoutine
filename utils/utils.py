@@ -6,7 +6,7 @@ kBlueC = ROOT.TColor.GetColor('#1f78b4')
 kOrangeC = ROOT.TColor.GetColor('#ff7f00')
 
 ## set numpy seed
-np.random.seed(42)
+np.random.seed(1995)
 
 def computeEfficiency(gen_hist, rec_hist, name, rebin=0):
     if rebin > 1:

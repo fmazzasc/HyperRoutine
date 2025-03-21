@@ -41,8 +41,8 @@ sigma_range_mc_to_data: [1.01, 1.3]
 
 # yield calculation
 is_trigger: True
-event_loss: 0.9
-signal_loss: 0.84
+event_loss: 0.77
+signal_loss: 0.77
 absorption_histo_file: "../results/absorption/absorption_histos.root"
 
 # systematic uncertainties

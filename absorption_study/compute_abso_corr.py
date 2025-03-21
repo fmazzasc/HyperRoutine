@@ -10,8 +10,8 @@ sys.path.append('../utils')
 import utils as utils
 
 
-outfile = ROOT.TFile('absorption_histos.root', 'RECREATE')
-pt_bins = [1.4, 1.7, 2., 2.3, 2.6, 3, 3.5, 4., 5]
+outfile = ROOT.TFile('absorption_histos_3b.root', 'RECREATE')
+pt_bins = [2,3,5]
 pt_bins = np.array(pt_bins, dtype=np.float32)
 
 HE_3_MASS = 2.809230089

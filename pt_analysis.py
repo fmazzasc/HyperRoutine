@@ -21,6 +21,10 @@ sys.path.append('utils')
 import utils as utils
 
 
+## levy-tsallis is defined in the file AdditionalFunctions.h
+ROOT.gROOT.ProcessLine('.L utils/AdditionalFunctions.h+')
+from ROOT import LevyTsallis
+
 parser = argparse.ArgumentParser(description='Configure the parameters of the script.')
 parser.add_argument('--config-file', dest='config_file', help="path to the YAML file with configuration.", default='')
 args = parser.parse_args()
@@ -130,7 +134,6 @@ mc_hdl.apply_preselections('rej==True')
 mc_reco_hdl = mc_hdl.apply_preselections('fIsReco == 1', inplace=False)
 mc_hdl_evsel = mc_hdl.apply_preselections('fIsSurvEvSel==True', inplace=False)
 
-
 print("** Data loaded. ** \n")
 print("----------------------------------")
 print("** Starting pt analysis **")
@@ -188,12 +191,17 @@ spectra_maker.make_spectra()
 # create corrected spectra
 spectra_maker.make_histos()
 # define fit function mT exponential
-h3l_spectrum = ROOT.TF1('mtexpo', '[2]*x*exp(-TMath::Sqrt([0]*[0]+x*x)/[1])', 0.1, 6)
+h3l_spectrum = ROOT.TF1('mtexpo', '[2]*x*exp(-TMath::Sqrt([0]*[0]+x*x)/[1])', 0., 6)
 h3l_spectrum.FixParameter(0, 2.99131)
 h3l_spectrum.SetParameter(1, 0.5199)
 h3l_spectrum.SetParLimits(1, 0.1, 1)
 h3l_spectrum.SetParameter(2, 1.e-05)
 h3l_spectrum.SetParLimits(2, 1.e-08, 1)
+# define fit function levy-tsallis
+# h3l_spectrum = LevyTsallis('levy', 2.99131)
+# h3l_spectrum.SetParLimits(3, 1e-08, 2.5e-08)
+
+
 h3l_spectrum.SetLineColor(kOrangeC)
 spectra_maker.fit_func = h3l_spectrum
 spectra_maker.fit_options = 'MIQ+'
@@ -209,10 +217,21 @@ final_syst_rms = final_stat.Clone('hSystRMS')
 final_syst_rms.SetLineColor(ROOT.kAzure + 2)
 final_syst_rms.SetMarkerColor(ROOT.kAzure + 2)
 
+
 std_yield = spectra_maker.fit_func.Integral(0, 10)
 std_yield_err = spectra_maker.fit_func.IntegralError(0, 10)
+extrapolated_fraction = spectra_maker.fit_func.Integral(0, pt_bins[0]) / std_yield
+std_yield_chi2 = spectra_maker.fit_func.GetChisquare() / spectra_maker.fit_func.GetNDF()
+std_yield_prob = spectra_maker.fit_func.GetProb()
 
-yield_dist = ROOT.TH1D('hYieldSyst', ';dN/dy ;Counts', 40, 1.e-08, 2.e-08)
+
+fit_fun_stat = copy.deepcopy(spectra_maker.fit_func)
+fit_fun_stat.SetLineColor(kOrangeC)
+fit_fun_stat.FixParameter(0, spectra_maker.fit_func.GetParameter(0))
+fit_fun_stat.FixParameter(1, spectra_maker.fit_func.GetParameter(1))
+fit_fun_stat.FixParameter(2, spectra_maker.fit_func.GetParameter(2))
+
+yield_dist = ROOT.TH1D('hYieldSyst', ';dN/dy ;Counts', 40, 1.e-08, 3.e-08)
 yield_prob = ROOT.TH1D('hYieldProb', ';prob. ;Counts', 100, 0, 1)
 
 
@@ -399,11 +418,15 @@ for i_bin in range(0, len(spectra_maker.bins) - 1):
 
 cFinalSpectrum = ROOT.TCanvas('cFinalSpectrum', 'cFinalSpectrum', 800, 600)
 # define canvas between 0 and 10
-cFinalSpectrum.DrawFrame(0.1e-09, 0, 6, 1.3 * final_stat.GetMaximum(), r';#it{p}_{T} (GeV/#it{c});#frac{1}{N_{ev}}#frac{#it{d}N}{#it{d}y#it{d}#it{p}_{T}} (GeV/#it{c})^{-1}')
-fit_fun_stat = final_stat.GetFunction(spectra_maker.fit_func.GetName())
-fit_fun_stat.SetRange(0, 6)
+cFinalSpectrum.DrawFrame(0.1e-09, 0.1e-09, 6, 1.5 * final_stat.GetMaximum(), r';#it{p}_{T} (GeV/#it{c});#frac{1}{N_{ev}}#frac{#it{d}N}{#it{d}y#it{d}#it{p}_{T}} (GeV/#it{c})^{-1}')
+cFinalSpectrum.SetLogy()
+
+## remove fit function from the list of functions
+final_syst_rms.GetListOfFunctions().Remove(spectra_maker.fit_func)
+final_stat.GetListOfFunctions().Remove(spectra_maker.fit_func)
 final_stat.Draw('PEX0 SAME')
 final_syst_rms.Draw('PE2 SAME')
+fit_fun_stat.Draw('SAME')
 cFinalSpectrum.Write()
 cFinalSpectrum.SaveAs(f'{output_dir_name}/cFinalSpectrum.pdf')
 
@@ -423,14 +446,13 @@ print("** Multi trial analysis done ** \n")
 
 print(f'Number of events analysed: {spectra_maker.n_ev}')
 print("Yield for the std selections: ", std_yield, " +- ", std_yield_err)
+print("Extrapolated fraction: ", extrapolated_fraction)
+print("Chi2/NDF: ", std_yield_chi2)
+print("Prob: ", std_yield_prob)
 print("Final fit parameters: ")
-print(fit_fun_stat.GetName())
 for i in range(fit_fun_stat.GetNpar()):
     print(f'Parameter {i}: {fit_fun_stat.GetParameter(i)} +- {fit_fun_stat.GetParError(i)}')
 
-print("Fit integral: ", fit_fun_stat.Integral(0, 10), " +- ", fit_fun_stat.IntegralError(0, 10))
-print("Chi2/ndf: ", fit_fun_stat.GetChisquare() / fit_fun_stat.GetNDF())
-print("Prob: ", fit_fun_stat.GetProb())
 
 if do_syst:
     # write trial strings to a text file
