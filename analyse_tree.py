@@ -354,10 +354,10 @@ if do_signal_extraction:
     signal_extraction = SignalExtraction(df)
     signal_extraction.bkg_fit_func = "pol2"
     signal_extraction.signal_fit_func = "gaus"
-    signal_extraction.n_bins_data = 50
+    signal_extraction.n_bins_data = 25
     signal_extraction.n_evts = utils.getNEvents(input_analysis_results_file, is_trigger) if input_analysis_results_file != '' else 0
     signal_extraction.matter_type = is_matter
-    signal_extraction.performance = False
+    signal_extraction.performance = True
     signal_extraction.is_3lh = not is_h4l
     signal_extraction.out_file =  sign_extr_dir
     signal_extraction.process_fit()

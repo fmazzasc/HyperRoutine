@@ -146,21 +146,17 @@ frame.GetXaxis().SetLabelSize(0.04)
 frame.GetXaxis().SetTitle("#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}")
 frame.GetYaxis().SetTitle("{}_{#Lambda}^{3}H/#Lambda")
 hp_2body.Draw('3 same')
-# hp_3body.Draw('3l same')
 
-gr_stat_new.Draw('Pz')
-gr_syst_new.Draw('P2')
+# gr_stat_new.Draw('Pz')
+# gr_syst_new.Draw('P2')
 
-gr_stat_trd.Draw('Pz')
-gr_syst_trd.Draw('P2')
+# gr_stat_trd.Draw('Pz')
+# gr_syst_trd.Draw('P2')
 
-gr_stat_hm.Draw('Pz')
-gr_syst_hm.Draw('P2')
+# gr_stat_hm.Draw('Pz')
+# gr_syst_hm.Draw('P2')
 
 hp_ratio_csm_1.Draw('L same')
-# hp_ratio_csm_3.Draw('L same')
-
-
 
 leg = ROOT.TLegend(0.57, 0.3, 0.94, 0.47)
 leg.SetBorderSize(0)
@@ -174,9 +170,7 @@ leg.AddEntry(gr_stat_trd, "Run 2, pp #sqrt{#it{s}} = 13 TeV", "P")
 leg_theory = ROOT.TLegend(0.57, 0.15, 0.94, 0.26)
 leg_theory.AddEntry(hp_ratio_csm_1, "SHM, #it{Vc} = 1.6 d#it{V}/d#it{y}", "L")
 leg_theory.AddEntry(hp_2body, "Coalescence, 2-body", "F")
-# leg.AddEntry(hp_3body, "Coalescence, 3-body", "F")
-# leg.AddEntry(hp_ratio_csm_3, "SHM, #it{Vc} = 3d#it{V}/d#it{y}", "L")
-leg.Draw()
+# leg.Draw()
 leg_theory.Draw()
 
 
@@ -189,78 +183,3 @@ outfile.Close()
 cv_out.SaveAs("yield.pdf")
 cv_out.SaveAs("yield.png")
 
-
-
-## cv models from p--Pb paper
-
-
-hp_ratio_csm_1.SetLineColor(922)
-hp_ratio_csm_1.SetLineWidth(2)
-hp_ratio_csm_1.SetTitle("SHM, #it{Vc} = 1.6d#it{V}/d#it{y}")
-hp_ratio_csm_1.SetMarkerSize(0)
-hp_ratio_csm_3.SetLineColor(922)
-hp_ratio_csm_3.SetLineWidth(2)
-hp_ratio_csm_3.SetLineStyle(2)
-hp_ratio_csm_3.SetMarkerSize(0)
-hp_ratio_csm_3.SetTitle("SHM, #it{Vc} = 3d#it{V}/d#it{y}")
-
-n = hp_ratio_csm_1.GetN()
-grshade = ROOT.TGraph(2*n)
-for i in range(n) : 
-   grshade.SetPoint(i, hp_ratio_csm_3.GetPointX(i), hp_ratio_csm_3.GetPointY(i))
-   grshade.SetPoint(n + i, hp_ratio_csm_1.GetPointX(n - i -1), hp_ratio_csm_1.GetPointY(n - i - 1))
-   
-grshade.SetFillColorAlpha(16, 0.571)
-# grshade.SetFillStyle(3013)
-
-hp_2body.SetLineColor(kBlueC)
-hp_2body.SetMarkerColor(kBlueC)
-hp_2body.SetTitle("2-body coalescence")
-hp_2body.SetFillStyle(3145)
-hp_2body.SetMarkerSize(0)
-hp_2body.SetLineWidth(2)
-
-hp_3body.SetLineColor(kAzureC)
-hp_3body.SetMarkerColor(kAzureC)
-hp_3body.SetTitle("3-body coalescence")
-hp_3body.SetFillStyle(3014)
-hp_3body.SetMarkerSize(0)
-hp_3body.SetLineWidth(2)
-
-
-hp_3body.SetFillColorAlpha(kAzureC, 0.571)
-hp_2body.SetFillColorAlpha(kBlueC, 0.571)
-
-
-
-cv = ROOT.TCanvas("cv", "cv", 700,700)
-cv.SetBottomMargin(0.145)
-cv.SetLeftMargin(0.17)
-cv.SetTopMargin(0.01)
-cv.SetRightMargin(0.01)
-frame=cv.DrawFrame(5., 2e-07, 200, 9e-06,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}; {}_{#Lambda}^{3}H/#Lambda")
-frame.GetXaxis().SetTitleOffset(1.1)
-frame.GetYaxis().SetTitleOffset(0.9)
-frame.GetYaxis().SetTitleSize(0.06)
-frame.GetXaxis().SetTitleSize(0.06)
-cv.SetLogx()
-cv.SetLogy()
-hp_2body.Draw("3 L same")
-hp_3body.Draw("3 L same")
-hp_ratio_csm_1.Draw("L same")
-hp_ratio_csm_3.Draw("L same")
-# hp_ratio_csm_van.Draw("L same")
-
-
-legT = ROOT.TLegend(0.19,0.76,0.55,0.96)
-legT.SetMargin(0.14)
-legT.SetBorderSize(0)
-legT.AddEntry(hp_3body, hp_3body.GetTitle(), "LF")
-legT.AddEntry(hp_2body,  hp_2body.GetTitle(), "LF")
-legT.AddEntry(hp_ratio_csm_1,  hp_ratio_csm_1.GetTitle(), "LF")
-legT.AddEntry(hp_ratio_csm_3, hp_ratio_csm_3.GetTitle(), "LF")
-legT.SetFillStyle(0)
-legT.Draw()
-
-
-cv.SaveAs("yield_models.pdf")

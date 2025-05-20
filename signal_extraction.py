@@ -53,22 +53,22 @@ class SignalExtraction:
 
         if self.is_3lh:
             self.inv_mass_string = '#it{M}_{^{3}He+#pi^{-}}' if self.is_matter else '#it{M}_{^{3}#bar{He}+#pi^{+}}'
-            decay_string = '{}^{3}_{#Lambda}H #rightarrow ^{3}He+#pi^{-}' if self.is_matter else '{}^{3}_{#bar{#Lambda}}#bar{H} #rightarrow ^{3}#bar{He}+#pi^{+}'
+            decay_string = '{}^{3}_{#Lambda}H #rightarrow ^{3}He + #pi^{-}' if self.is_matter else '{}^{3}_{#bar{#Lambda}}#bar{H} #rightarrow ^{3}#bar{He} + #pi^{+}'
             tree_var_name = 'fMassH3L'
         else:
             self.inv_mass_string = '#it{M}_{^{4}He+#pi^{-}}' if self.is_matter else '#it{M}_{^{4}#bar{He}+#pi^{+}}'
-            decay_string = '{}^{4}_{#Lambda}H #rightarrow ^{4}He+#pi^{-}' if self.is_matter else '{}^{4}_{#bar{#Lambda}}#bar{H} #rightarrow ^{4}#bar{He}+#pi^{+}'
+            decay_string = '{}^{4}_{#Lambda}H #rightarrow ^{4}He+#pi^{-}' if self.is_matter else '{}^{4}_{#bar{#Lambda}}#bar{H} #rightarrow ^{4}#bar{He} + #pi^{+}'
             tree_var_name = 'fMassH4L'
 
         # define signal and bkg variables
         if self.is_3lh:
-            mass = ROOT.RooRealVar('m', self.inv_mass_string, 2.96, 3.04, 'GeV/c^{2}')
-            mu = ROOT.RooRealVar('mu', 'hypernucl mass', 2.988, 2.992, 'GeV/c^{2}')
+            mass = ROOT.RooRealVar('m', self.inv_mass_string, 2.965, 3.02, 'GeV/#it{c}^{2}')
+            mu = ROOT.RooRealVar('mu', 'hypernucl mass', 2.988, 2.992, 'GeV/#it{c}^{2}')
         else:
-            mass = ROOT.RooRealVar('m', self.inv_mass_string, 3.89, 3.97, 'GeV/c^{2}')
-            mu = ROOT.RooRealVar('mu', 'hypernucl mass', 3.9, 3.95, 'GeV/c^{2}')
+            mass = ROOT.RooRealVar('m', self.inv_mass_string, 3.89, 3.97, 'GeV/#it{c}^{2}')
+            mu = ROOT.RooRealVar('mu', 'hypernucl mass', 3.9, 3.95, 'GeV/#it{c}^{2}')
 
-        sigma = ROOT.RooRealVar('sigma', 'hypernucl width', 0.0011, 0.0024, 'GeV/c^{2}')
+        sigma = ROOT.RooRealVar('sigma', 'hypernucl width', 0.0011, 0.0024, 'GeV/#it{c}^{2}')
         a1 = ROOT.RooRealVar('a1', 'a1', 0., 5.)
         a2 = ROOT.RooRealVar('a2', 'a2', 0., 5.)
         n1 = ROOT.RooRealVar('n1', 'n1', 0., 10.)
@@ -163,6 +163,7 @@ class SignalExtraction:
         self.pdf.plotOn(self.data_frame_fit, ROOT.RooFit.Components('bkg'), ROOT.RooFit.LineStyle(ROOT.kDashed), ROOT.RooFit.LineColor(kOrangeC))
         self.pdf.plotOn(self.data_frame_fit, ROOT.RooFit.LineColor(ROOT.kAzure + 2 ), ROOT.RooFit.Name('fit_func'))
 
+
         chi2_data = self.data_frame_fit.chiSquare('fit_func', 'data')
         ndf_data = self.n_bins_data - fit_results_data.floatParsFinal().getSize()
 
@@ -212,23 +213,35 @@ class SignalExtraction:
         sqrtsnn = "#sqrt{#it{s}}"
         if self.colliding_system != 'pp':
             sqrtsnn = "#sqrt{#it{s_{NN}}}"
-        pinfo_alice.AddText(f'Run 3, {self.colliding_system} @ {sqrtsnn} = {self.energy} TeV')
-        if not self.performance:
-            ##rounding n_events
-            exponent = np.floor(np.log10(self.n_evts))
-            self.n_evts = self.n_evts / 10**(exponent)
-            pinfo_alice.AddText('N_{ev} = ' + f'{self.n_evts:.1f} ' + '#times 10^{' + f'{exponent:.0f}' + '}') 
+        pinfo_alice.AddText(f'Run 3 {self.colliding_system}, {sqrtsnn} = {self.energy} TeV')
+        exponent = np.floor(np.log10(self.n_evts))
+        self.n_evts = self.n_evts / 10**(exponent)
+        pinfo_alice.AddText('#it{N}_{evt} = ' + f'{self.n_evts:.1f} ' + '#times 10^{' + f'{exponent:.0f}' + '}') 
         pinfo_alice.AddText(decay_string)
+        pinfo_alice.AddText('0 #leq #it{p}_{T} < 9 GeV/#it{c}, |y| < 1')
 
         if self.additional_pave_text != '':
             pinfo_alice.AddText(self.additional_pave_text)
 
-        if not self.performance:
-            self.data_frame_fit.addObject(pinfo_vals)
+        legend = ROOT.TLegend(0.6, 0.2, 0.9, 0.45)
+        legend.SetBorderSize(0)
+        legend.SetFillStyle(0)
+        legend.SetTextFont(42)
+        legend.SetTextSize(0.04)
+        ## signal and background components
+        legend.AddEntry(self.data_frame_fit.findObject('fit_func'), 'Signal + Background', 'l')
+        legend.AddEntry(self.data_frame_fit.findObject('bkg'), 'Background', 'l')
+        ## set proper color to background legend entry
+        legend.GetListOfPrimitives().At(1).SetLineColor(kOrangeC)
+        legend.GetListOfPrimitives().At(1).SetLineStyle(2)
+        legend.GetListOfPrimitives().At(1).SetLineWidth(2)
+        self.data_frame_fit.addObject(pinfo_vals)
         self.data_frame_fit.addObject(pinfo_alice)
+        self.data_frame_fit.addObject(legend)
 
         fit_stats = {'signal': [signal_counts, signal_counts_error],
                      'significance': [significance, significance_err], 's_b_ratio': [signal_int_val_3s/bkg_int_val_3s, s_b_ratio_err], 'chi2': chi2_data/ndf_data}
+        
 
         if rooworkspace_path != None:
             w = ROOT.RooWorkspace('w')
