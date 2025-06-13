@@ -62,7 +62,7 @@ class SignalExtraction:
 
         # define signal and bkg variables
         if self.is_3lh:
-            mass = ROOT.RooRealVar('m', self.inv_mass_string, 2.965, 3.02, 'GeV/#it{c}^{2}')
+            mass = ROOT.RooRealVar('m', self.inv_mass_string, 2.96, 3.04, 'GeV/#it{c}^{2}')
             mu = ROOT.RooRealVar('mu', 'hypernucl mass', 2.988, 2.992, 'GeV/#it{c}^{2}')
         else:
             mass = ROOT.RooRealVar('m', self.inv_mass_string, 3.89, 3.97, 'GeV/#it{c}^{2}')
@@ -77,7 +77,7 @@ class SignalExtraction:
         c1 = ROOT.RooRealVar('c1', 'constant c1', -1., 1)
 
         if self.signal_fit_func == 'dscb':
-            signal = ROOT.RooCrystalBall('cb', 'cb', mass, mu, sigma, a1, n1, a2, n2)
+            signal = ROOT.RooCrystalBall('cb', 'cb', mass, mu, sigma, a1, n1, True)
         elif self.signal_fit_func == 'gaus':
             signal = ROOT.RooGaussian('gaus', 'gaus', mass, mu, sigma)
         else:

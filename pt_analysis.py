@@ -22,7 +22,7 @@ import utils as utils
 
 
 ## levy-tsallis is defined in the file AdditionalFunctions.h
-ROOT.gROOT.ProcessLine('.L utils/AdditionalFunctions.h+')
+ROOT.gROOT.ProcessLine('.L utils/AdditionalFunctions.h++')
 from ROOT import LevyTsallis
 
 parser = argparse.ArgumentParser(description='Configure the parameters of the script.')
@@ -54,6 +54,7 @@ n_bins_mass_data = config['n_bins_mass_data']
 n_bins_mass_mc = config['n_bins_mass_mc']
 sigma_range_mc_to_data = config['sigma_range_mc_to_data']
 
+coal_based_mc = config['coal_based_mc']
 absorption_histo_file = config['absorption_histo_file']
 event_loss = config['event_loss']
 signal_loss = config['signal_loss']
@@ -130,9 +131,14 @@ spectra_file = ROOT.TFile.Open('utils/heliumSpectraMB.root')
 he3_spectrum = spectra_file.Get('fCombineHeliumSpecLevyFit_0-100')
 spectra_file.Close()
 utils.reweight_pt_spectrum(mc_hdl, 'fAbsGenPt', he3_spectrum)
-mc_hdl.apply_preselections('rej==True')
-mc_reco_hdl = mc_hdl.apply_preselections('fIsReco == 1', inplace=False)
-mc_hdl_evsel = mc_hdl.apply_preselections('fIsSurvEvSel==True', inplace=False)
+if not coal_based_mc:
+    mc_hdl.apply_preselections('rej==True')
+    mc_reco_hdl = mc_hdl.apply_preselections('fIsReco == 1', inplace=False)
+    mc_hdl_evsel = mc_hdl.apply_preselections('fIsSurvEvSel==True', inplace=False)
+else:
+    signal_loss = 1
+    mc_reco_hdl = mc_hdl.apply_preselections('fIsReco == 1', inplace=False)
+    mc_hdl_evsel = mc_hdl
 
 print("** Data loaded. ** \n")
 print("----------------------------------")
@@ -190,18 +196,9 @@ spectra_maker.fit_range = fit_range
 spectra_maker.make_spectra()
 # create corrected spectra
 spectra_maker.make_histos()
-# define fit function mT exponential
-h3l_spectrum = ROOT.TF1('mtexpo', '[2]*x*exp(-TMath::Sqrt([0]*[0]+x*x)/[1])', 0., 6)
-h3l_spectrum.FixParameter(0, 2.99131)
-h3l_spectrum.SetParameter(1, 0.5199)
-h3l_spectrum.SetParLimits(1, 0.1, 1)
-h3l_spectrum.SetParameter(2, 1.e-05)
-h3l_spectrum.SetParLimits(2, 1.e-08, 1)
-# define fit function levy-tsallis
-# h3l_spectrum = LevyTsallis('levy', 2.99131)
-# h3l_spectrum.SetParLimits(3, 1e-08, 2.5e-08)
-
-
+h3l_spectrum = LevyTsallis('levy', 2.99131)
+h3l_spectrum.SetParLimits(1, 4, 30)
+h3l_spectrum.SetParLimits(3, 1e-08, 2.5e-08)
 h3l_spectrum.SetLineColor(kOrangeC)
 spectra_maker.fit_func = h3l_spectrum
 spectra_maker.fit_options = 'MIQ+'
@@ -366,8 +363,7 @@ for i_bin in range(0, len(spectra_maker.bins) - 1):
     canvas.SetBottomMargin(0.15)
     canvas.SetLeftMargin(0.08)
     canvas.SetRightMargin(0.08)
-    canvas.DrawFrame(0, 0, 2 * std_corrected_counts[i_bin],
-                     1.1 * h_pt_syst[i_bin].GetMaximum(), r';d#it{N} / d#it{p}_{T} (GeV/#it{c})^{-1};')
+    canvas.DrawFrame(0, 0, 2 * std_corrected_counts[i_bin], 1.1 * h_pt_syst[i_bin].GetMaximum(), r';d#it{N} / d#it{p}_{T} (GeV/#it{c})^{-1};')
     # create a line for the standard value of lifetime
     std_line = ROOT.TLine(std_corrected_counts[i_bin], 0, std_corrected_counts[i_bin], 1.05 * h_pt_syst[i_bin].GetMaximum())
     std_line.SetLineColor(kOrangeC)
@@ -383,8 +379,6 @@ for i_bin in range(0, len(spectra_maker.bins) - 1):
     h_pt_syst[i_bin].Fit(fit_func, 'Q')
     syst_mu = fit_func.GetParameter(1)
     syst_mu_err = fit_func.GetParError(1)
-
-
     syst_sigma = fit_func.GetParameter(2)
     syst_rms = h_pt_syst[i_bin].GetRMS()
 

@@ -207,7 +207,8 @@ class SpectraMaker:
                 signal_loss_corr = self.signal_loss
             
             local_corrected_counts = self.raw_counts[ibin] / self.efficiency[ibin] / absorption_corr / bin_width
-            local_corrected_counts_err = self.raw_counts_err[ibin] / self.efficiency[ibin] / absorption_corr / bin_width
+            rel_error = np.sqrt((self.raw_counts_err[ibin] / self.raw_counts[ibin])**2 + (self.efficiency_err[ibin] / self.efficiency[ibin])**2)
+            local_corrected_counts_err = local_corrected_counts * rel_error
 
             if self.var == 'fPt':
                 local_corrected_counts = local_corrected_counts / self.n_ev / self.branching_ratio / self.delta_rap / signal_loss_corr * event_loss_corr

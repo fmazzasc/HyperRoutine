@@ -5,7 +5,7 @@ import numpy as np
 kBlueC = ROOT.TColor.GetColor('#1f78b4')
 kOrangeC  = ROOT.TColor.GetColor('#ff7f00')
 
-hyp_file = ROOT.TFile("../results/pt_analysis_antimat_roftf_cut.root")
+hyp_file = ROOT.TFile("../results/2022_pt_analysis/pt_analysis_antimat.root")
 hyp_hist_stat = hyp_file.Get("std/hStat")
 hyp_hist_syst = hyp_file.Get("std/hSyst")
 

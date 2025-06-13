@@ -141,4 +141,12 @@ double Boltzmann_Func(const double *x, const double *p) {
   return pt * norm * mt * TMath::Exp(-mt / T);
 }
 
+TF1 * Boltzmann(const Char_t *name, double mass, double T = 0.1, double norm = 1.) {
+  TF1 *fBoltzmann = new TF1(name, Boltzmann_Func, 0., 10., 3);
+  fBoltzmann->SetParameters(mass, T, norm);
+  fBoltzmann->SetParNames("mass", "T", "norm");
+  fBoltzmann->FixParameter(0, mass);
+  return fBoltzmann;
+}
+
 #endif
