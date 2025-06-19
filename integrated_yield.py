@@ -23,7 +23,9 @@ config = yaml.full_load(config_file)
 input_file = ROOT.TFile(config['input_file_spectrum'])
 h3l_spectrum = input_file.Get('std/hStat')
 h3l_spectrum_syst = input_file.Get('std/hSyst')
+syst_sig_extr = input_file.Get('std/hYieldSyst')
 h3l_spectrum.SetDirectory(0)
+syst_sig_extr.SetDirectory(0)
 
 ## comparison with tommca model
 tommca_file = ROOT.TFile('utils/models/HypertritonToMCCA_gaus.root')
@@ -45,11 +47,8 @@ levy.SetParLimits(1, 10, 30)
 levy.SetParLimits(3, 1e-08, 2.5e-08)
 ## fit the spectrum with all the functions and get the integral of the fit functions
 h3l_spectrum.Fit(mt_expo, 'R')
-print('mt_expo integral: ', mt_expo.Integral(0., 6.), ' +/- ', mt_expo.IntegralError(0., 6.))
 h3l_spectrum.Fit(pt_expo, 'R')
-print('pt_expo integral: ', pt_expo.Integral(0., 6.), ' +/- ', pt_expo.IntegralError(0., 6.))
 h3l_spectrum.Fit(levy, 'R')
-print('levy integral: ', levy.Integral(0., 6.), ' +/- ', levy.IntegralError(0., 6.))
 ## plot all the fit functions and the datapoint into a single canvas
 canvas = ROOT.TCanvas('canvas', 'canvas', 800, 600)
 canvas.SetLogy()
@@ -74,6 +73,17 @@ pt_expo.Draw('same')
 levy.SetLineColor(ROOT.kGreen)
 levy.SetLineWidth(2)
 levy.Draw('same')
+leg_canvas = ROOT.TLegend(0.15, 0.6, 0.4, 0.85)
+leg_canvas.SetFillStyle(0)
+leg_canvas.SetBorderSize(0)
+leg_canvas.SetTextFont(42)
+leg_canvas.SetMargin(0.1)
+leg_canvas.SetTextSize(0.037)
+leg_canvas.AddEntry(levy, 'Levy-Tsallis fit', 'L')
+leg_canvas.AddEntry(mt_expo, '#it{m}_{T} exponential fit', 'L')
+leg_canvas.AddEntry(pt_expo, '#it{p}_{T} exponential fit', 'L')
+leg_canvas.Draw()
+
 
 
 ## connected errorband using a TGraphErrors
@@ -90,14 +100,13 @@ gr_gaus.SetLineColor(ROOT.kOrange)
 gr_gaus.SetMarkerColor(ROOT.kOrange)
 gr_gaus.SetFillColorAlpha(ROOT.kOrange, 0.5)
 # plot tomcca predictions as a shaded red error band
-pinfo_alice = ROOT.TPaveText(0.53, 0.6, 0.89, 0.85, 'NDC')
+pinfo_alice = ROOT.TPaveText(0.49, 0.65, 0.89, 0.85, 'NDC')
 pinfo_alice.SetBorderSize(0)
 pinfo_alice.SetFillStyle(0)
 pinfo_alice.SetTextAlign(11)
 pinfo_alice.SetTextFont(42)
-pinfo_alice.AddText('ALICE Preliminary')
-pinfo_alice.AddText('Run 3 pp,#kern[0.4]{#sqrt{#it{s}}} = 13.6 TeV')
-pinfo_alice.AddText('#it{L}_{int} = 63 pb^{-1}')
+pinfo_alice.AddText('ALICE, pp,#kern[0.4]{#sqrt{#it{s}}} = 13.6 TeV')
+pinfo_alice.AddText('#it{L}_{int} = 52 pb^{-1}')
 pinfo_alice.AddText('#pm 10% global unc. not shown')
 
 c = ROOT.TCanvas('c', 'c', 800, 600)
@@ -133,6 +142,7 @@ leg.AddEntry(gr, 'Congleton Wave Function', 'F')
 leg.AddEntry(gr_gaus, 'd#minus#Lambda Gaussian Wave Function', 'F')
 leg_data.Draw()
 leg.Draw()
+c.SaveAs(config['output_file'].replace('.root', '_pt_spectrum.pdf'))
 
 outfile = ROOT.TFile(config['output_file'], 'RECREATE')
 h3l_spectrum.Write('hStat')
@@ -142,3 +152,34 @@ pt_expo.Write('pt_expo')
 levy.Write('levy')
 canvas.Write('canvas')
 c.Write('canvas_pt')
+
+
+## print
+mt_expo_integral = mt_expo.Integral(0., 6.)
+pt_expo_integral = pt_expo.Integral(0., 6.)
+levy_integral = levy.Integral(0., 6.)
+print('mt_expo integral: ', mt_expo_integral, ' +/- ', mt_expo.IntegralError(0., 6.))
+print('pt_expo integral: ', pt_expo_integral, ' +/- ', pt_expo.IntegralError(0., 6.))
+print('levy integral: ', levy_integral, ' +/- ', levy.IntegralError(0., 6.))
+
+rms_extr= np.std([mt_expo_integral, pt_expo_integral, levy_integral])
+rel_unc_extr = rms_extr / np.mean([mt_expo_integral, pt_expo_integral, levy_integral])
+br_unc = 0.08
+
+## syst unc due to signal extraction and selection
+syst_sig_extr.Fit('gaus', 'R')
+## get rms of the gaussian fit
+syst_sig_extr_rms = syst_sig_extr.GetFunction('gaus').GetParameter(2)
+syst_sig_extr_mean = syst_sig_extr.GetFunction('gaus').GetParameter(1)
+rel_unc_sig_extr = syst_sig_extr_rms / syst_sig_extr_mean
+
+## sum all the uncertainties in quadrature
+total_rel_unc = np.sqrt(rel_unc_extr**2 + rel_unc_sig_extr**2 + br_unc**2)
+total_unc = total_rel_unc * levy_integral
+print('Total relative uncertainty: ', total_rel_unc)
+print('Total uncertainty: ', total_unc)
+print('Levy integral: ', levy_integral, ' +/- ', total_unc)
+
+
+
+

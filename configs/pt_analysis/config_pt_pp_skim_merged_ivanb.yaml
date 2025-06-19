@@ -41,7 +41,8 @@ sigma_range_mc_to_data: [1.01, 1.3]
 
 # yield calculation
 is_trigger: True
-event_loss: 0.77
+coal_based_mc: False
+event_loss: 0.81
 signal_loss: 0.77
 absorption_histo_file: "../results/absorption/absorption_histos.root"
 
@@ -60,7 +61,7 @@ bin_structure:
       "selections": {
       "fEtaHe3" : "abs(fEtaHe3) < 0.9",
       "fEtaPi" : "abs(fEtaPi) < 0.9",
-      "fCosPA": "fCosPA > 0.999",
+      "fCosPA": "fCosPA > 0.995",
       "fNSigmaHe": "abs(fNSigmaHe) < 2.5",
       "fTPCsignalPi": "fTPCsignalPi < 1000.",
       "fNTPCclusPi": "fNTPCclusPi > 70",

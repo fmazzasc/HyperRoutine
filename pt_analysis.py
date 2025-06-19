@@ -197,7 +197,7 @@ spectra_maker.make_spectra()
 # create corrected spectra
 spectra_maker.make_histos()
 h3l_spectrum = LevyTsallis('levy', 2.99131)
-h3l_spectrum.SetParLimits(1, 4, 30)
+h3l_spectrum.SetParLimits(1, 10, 30)
 h3l_spectrum.SetParLimits(3, 1e-08, 2.5e-08)
 h3l_spectrum.SetLineColor(kOrangeC)
 spectra_maker.fit_func = h3l_spectrum
@@ -346,10 +346,10 @@ if do_syst:
         for i_bin in range(0, len(spectra_maker.bins) - 1):
             h_pt_syst[i_bin].Fill(spectra_maker.corrected_counts[i_bin])
 
-        if spectra_maker.fit_func.GetProb() > 0.05 and spectra_maker.chi2_selection():
-            spectra_maker.dump_to_output_dir()
-            yield_dist.Fill(spectra_maker.fit_func.Integral(0, 10))
-            yield_prob.Fill(spectra_maker.fit_func.GetProb())
+        spectra_maker.dump_to_output_dir()
+        # if spectra_maker.fit_func.GetProb() > 0.05 and spectra_maker.chi2_selection():
+        yield_dist.Fill(spectra_maker.fit_func.Integral(0, 10))
+        yield_prob.Fill(spectra_maker.fit_func.GetProb())
 
         spectra_maker.del_dyn_members()
 
@@ -369,8 +369,7 @@ for i_bin in range(0, len(spectra_maker.bins) - 1):
     std_line.SetLineColor(kOrangeC)
     std_line.SetLineWidth(2)
     # create box for statistical uncertainty
-    std_errorbox = ROOT.TBox(std_corrected_counts[i_bin] - std_corrected_counts_err[i_bin], 0,
-                             std_corrected_counts[i_bin] + std_corrected_counts_err[i_bin], 1.05 * h_pt_syst[i_bin].GetMaximum())
+    std_errorbox = ROOT.TBox(std_corrected_counts[i_bin] - std_corrected_counts_err[i_bin], 0, std_corrected_counts[i_bin] + std_corrected_counts_err[i_bin], 1.05 * h_pt_syst[i_bin].GetMaximum())
     std_errorbox.SetFillColorAlpha(kOrangeC, 0.5)
     std_errorbox.SetLineWidth(0)
     # fitting histogram with systematic variations
@@ -386,8 +385,12 @@ for i_bin in range(0, len(spectra_maker.bins) - 1):
         syst_sigma = np.sqrt(syst_sigma**2 + (std_corrected_counts[i_bin] * absorption_syst)**2 + (std_corrected_counts[i_bin] * br_syst)**2)
         syst_rms = np.sqrt(syst_rms**2 + (std_corrected_counts[i_bin] * absorption_syst)**2 + (std_corrected_counts[i_bin] * br_syst)**2)
 
-    final_syst.SetBinError(i_bin+1, syst_sigma)
-    final_syst_rms.SetBinError(i_bin+1, syst_rms)
+    if do_syst:
+        final_syst.SetBinError(i_bin+1, syst_sigma)
+        final_syst_rms.SetBinError(i_bin+1, syst_rms)
+    else:
+        final_syst.SetBinError(i_bin+1, 0)
+        final_syst_rms.SetBinError(i_bin+1, 0)
 
 
     syst_sigma_err = fit_func.GetParError(2)

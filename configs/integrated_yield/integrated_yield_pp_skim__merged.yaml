@@ -1,4 +1,4 @@
-input_file_spectrum: "../results/2024_pt_analysis/pt_analysis_antimat_merged.root"
+input_file_spectrum: "../results/2024_pt_analysis/pt_analysis_antimat_2024.root"
 output_file: "../results/2024_pt_analysis/integrated_yield.root"
 branching_ratio_syst: 0.08
 absorption_syst: 0.03

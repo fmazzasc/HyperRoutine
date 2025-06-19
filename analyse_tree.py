@@ -109,6 +109,7 @@ h2MassPIDHypo = ROOT.TH2F('h2MassPIDHypo', r';Hypothesis; m({}^{3}_{#Lambda}H) (
 h2Mass4LHnSigmaHe = ROOT.TH2F('h2Mass4LHnSigmaHe', r';n_{#sigma}^{TPC}({}^{3}He); m({}^{4}_{#Lambda}H) (GeV/#it{c})', 50, -4, 4, 30, 3.89, 3.97)
 # for MC only
 hPtGen = ROOT.TH1F('hPtGen', r';#it{p}_{T}^{gen} (GeV/#it{c})', 8, np.array([1.4, 1.7, 2., 2.3, 2.6, 3, 3.5, 4., 5], dtype=np.float64))
+hPtGenFineBins = ROOT.TH1F('hPtGenFineBins', r';#it{p}_{T}^{gen} (GeV/#it{c})', 100, 0, 6)
 hPtGenFull = ROOT.TH1F('hPtGenFull', r';#it{p}_{T}^{gen} (GeV/#it{c})', 8, np.array([1.4, 1.7, 2., 2.3, 2.6, 3, 3.5, 4., 5], dtype=np.float64))
 
 hCtGen = ROOT.TH1F('hCtGen', r';#it{c}#tau (cm)', 50, 0, 40)
@@ -158,6 +159,7 @@ if mc:
     df.query(mc_pre_sels, inplace=True)
     ## fill histograms to be put at denominator of efficiency
     utils.fill_th1_hist(hPtGen, df, 'fAbsGenPt')
+    utils.fill_th1_hist(hPtGenFineBins, df, 'fAbsGenPt')
     utils.fill_th1_hist(hCtGen, df, 'fGenCt')
     ## now we select only the reconstructed particles
     df.query('fIsReco==True', inplace=True)
@@ -324,6 +326,7 @@ if mc:
     hResolutionDecVtxY.Write()
     hResolutionDecVtxZ.Write()
     hPtGen.Write()
+    hPtGenFineBins.Write()
     hCtGen.Write()
 
     h_eff = utils.computeEfficiency(hPtGen, hPtRec, 'hEffPt')
