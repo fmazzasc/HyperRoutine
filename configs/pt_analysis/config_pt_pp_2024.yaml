@@ -40,6 +40,8 @@ br_syst: 0.1
 do_syst: True
 n_trials: 500
 
+23_24_eff_scaling: 0.986
+
 # binning for analysis of the pt spectra and systematic uncertainties
 pt_bins: [1.4, 1.7, 2., 2.3, 2.6, 3, 3.5, 4., 5]
 bin_structure:
@@ -61,6 +63,8 @@ bin_structure:
           "fCosPA": {"cut_greater": True, "cut_abs": False, "cut_list": [0.999, 0.9999, 50]},
           "fNSigmaHe": {"cut_greater": False, "cut_abs": True, "cut_list": [3., 2., 15]},
           "fTPCsignalPi": {"cut_greater": False, "cut_abs": False, "cut_list": [1000, 1000, 1]},
+          "fNTPCclusPi": {"cut_greater": True, "cut_abs": False, "cut_list": [70, 80, 90, 3]},
+          "fNTPCclusHe": {"cut_greater": True, "cut_abs": False, "cut_list": [70, 80, 90, 3]},
       },
 
       "systematic_fit_func": {

@@ -24,6 +24,8 @@ input_file = ROOT.TFile(config['input_file_spectrum'])
 h3l_spectrum = input_file.Get('std/hStat')
 h3l_spectrum_syst = input_file.Get('std/hSyst')
 syst_sig_extr = input_file.Get('std/hYieldSyst')
+hEff = input_file.Get('std/h_efficiency')
+hAbso = input_file.Get('std/h_abso_frac_pt')
 h3l_spectrum.SetDirectory(0)
 syst_sig_extr.SetDirectory(0)
 
@@ -145,11 +147,16 @@ leg.Draw()
 c.SaveAs(config['output_file'].replace('.root', '_pt_spectrum.pdf'))
 
 outfile = ROOT.TFile(config['output_file'], 'RECREATE')
+hEff.Write('h_efficiency')
+hAbso.Write('h_abso_frac_pt')
 h3l_spectrum.Write('hStat')
 h3l_spectrum_syst.Write('hSyst')
+syst_sig_extr.Write('hSystDistr')
+
 mt_expo.Write('mt_expo')
 pt_expo.Write('pt_expo')
 levy.Write('levy')
+
 canvas.Write('canvas')
 c.Write('canvas_pt')
 
@@ -162,9 +169,9 @@ print('mt_expo integral: ', mt_expo_integral, ' +/- ', mt_expo.IntegralError(0.,
 print('pt_expo integral: ', pt_expo_integral, ' +/- ', pt_expo.IntegralError(0., 6.))
 print('levy integral: ', levy_integral, ' +/- ', levy.IntegralError(0., 6.))
 
+stat_unc = levy.IntegralError(0., 6.)
 rms_extr= np.std([mt_expo_integral, pt_expo_integral, levy_integral])
 rel_unc_extr = rms_extr / np.mean([mt_expo_integral, pt_expo_integral, levy_integral])
-br_unc = 0.08
 
 ## syst unc due to signal extraction and selection
 syst_sig_extr.Fit('gaus', 'R')
@@ -174,11 +181,11 @@ syst_sig_extr_mean = syst_sig_extr.GetFunction('gaus').GetParameter(1)
 rel_unc_sig_extr = syst_sig_extr_rms / syst_sig_extr_mean
 
 ## sum all the uncertainties in quadrature
-total_rel_unc = np.sqrt(rel_unc_extr**2 + rel_unc_sig_extr**2 + br_unc**2)
+total_rel_unc = np.sqrt(rel_unc_extr**2 + rel_unc_sig_extr**2)
 total_unc = total_rel_unc * levy_integral
-print('Total relative uncertainty: ', total_rel_unc)
-print('Total uncertainty: ', total_unc)
-print('Levy integral: ', levy_integral, ' +/- ', total_unc)
+print('Total uncertainty (syst): ', total_unc)
+print('Total uncertainty (stat): ', stat_unc)
+print('Levy integral: ', levy_integral, ' +/- ', total_unc, ' (syst), ', stat_unc, ' (stat)')
 
 
 
