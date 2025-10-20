@@ -366,6 +366,9 @@ def correct_and_convert_df(df, calibrate_he3_pt = False, isMC=False, isH4L=False
             df.eval('fGenCt = fGenDecLen * 2.99131 / fGenP', inplace=True)
         else:
             df.eval('fGenCt = fGenDecLen * 3.922 / fGenP', inplace=True)
+    
+        if 'fIsTwoBodyDecay' in df.columns:
+            df.query('fIsTwoBodyDecay==True', inplace=True)
 
 
     # remove useless columns
