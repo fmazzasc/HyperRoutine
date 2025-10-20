@@ -4,9 +4,9 @@ input_files_data:
     "/data3/fmazzasc/hyp_run_3/pp2024/full/AO2D.root",
   ]
 input_files_mc: [
-  "/data3/fmazzasc/hyp_run_3/mc/LHC25b9/AO2D.root"
+  "/data3/fmazzasc/hyp_run_3/mc/LHC25f1/AO2D.root"
   ]
-coal_based_mc: True
+coal_based_mc: False
 
 input_analysis_results_file:
   [
@@ -37,7 +37,7 @@ absorption_histo_file: "../results/absorption/absorption_histos.root"
 # systematic uncertainties
 absorption_syst: 0.03
 br_syst: 0.1
-do_syst: True
+do_syst: False
 n_trials: 500
 
 23_24_eff_scaling: 0.986

@@ -357,6 +357,7 @@ def correct_and_convert_df(df, calibrate_he3_pt = False, isMC=False, isH4L=False
 
     if isMC:
         df.eval('fGenDecLen = sqrt(fGenXDecVtx**2 + fGenYDecVtx**2 + fGenZDecVtx**2)', inplace=True)
+        df.eval('fGenDecRad = sqrt(fGenXDecVtx**2 + fGenYDecVtx**2)', inplace=True)
         df.eval('fGenPz = fGenPt * sinh(fGenEta)', inplace=True)
         df.eval('fGenP = sqrt(fGenPt**2 + fGenPz**2)', inplace=True)
         df.eval("fAbsGenPt = abs(fGenPt)", inplace=True)

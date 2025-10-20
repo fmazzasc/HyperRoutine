@@ -32,7 +32,7 @@ selection:
     # "fTrackedClSize": "fTrackedClSize > 0",
     # "fDcaPi": "abs(fDcaPi) > 0.05",
     "fTPCChi2He": "fTPCChi2He > 0.5",
-    "fCosPA": "fCosPA > 0.995",
+    "fCosPA": "fCosPA > 0.9995",
     "fNSigmaHe": "fNSigmaHe > -2",
     # "fTPCsignalPi": "fTPCsignalPi < 1000.",
     "fTPCmomHe": "fTPCmomHe > 0.5",

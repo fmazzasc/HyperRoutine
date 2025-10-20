@@ -75,7 +75,7 @@ hMass4LH = ROOT.TH1F('h_4lh_mass', r';  m({}^{4}_{#Lambda}H) (GeV/#it{c^{2}})', 
 h2Mass3LHVvsMass4LH = ROOT.TH2F('h2Mass3LHVvsMass4LH', r'; m({}^{3}_{#Lambda}H) (GeV/#it{c}); m({}^{4}_{#Lambda}H) (GeV/#it{c})', 40, 2.96, 3.04, 32, 3.87, 3.98)
 hPtRec = ROOT.TH1F('hPtRec', r';#it{p}_{T} (GeV/#it{c})', 8, np.array([1.4, 1.7, 2., 2.3, 2.6, 3, 3.5, 4., 5], dtype=np.float64))
 hCtRec = ROOT.TH1F('hCtRec', r';#it{c#tau} (cm)', 50, 0, 40)
-hRadius = ROOT.TH1F('hRadius', r';Radius (cm)', 100, 0, 40)
+hRadius = ROOT.TH1F('hRadius', r';Radius (cm)', 50, 0, 40)
 hDecLen = ROOT.TH1F('hDecLen', r';Decay length (cm)', 100, 0, 40)
 hNSigHe = ROOT.TH1F('hNSigmaHe', r';n_{#sigma}^{TPC}({}^{3}He)', 50, -3, 3)
 h2NSigHe3VsMom = ROOT.TH2F('h2NSigHe3VsMom', r';{}^{3}He #it{p}_{T} (GeV/#it{c});n_{#sigma}^{TPC}({}^{3}He)', 50, -10, 10, 50, -3, 3)
@@ -98,6 +98,7 @@ hHeMomTPCMinusMomGloHeHyp = ROOT.TH2F('hHeMomTPCMinusMomGloHeHyp', r';#it{p}^{gl
 
 h2MassV2 = ROOT.TH2F('h2MassV2', r';m({}^{3}_{#Lambda}H) (GeV/#it{c}); v2', 30, mass_low_limit, mass_high_limit, 500, -1, 1)
 hMeanV2VsMass = ROOT.TH1F('hMeanV2VsMass', r';m({}^{3}_{#Lambda}H) (GeV/#it{c}); #LT v2 #GT', 30, mass_low_limit, mass_high_limit)
+h2MassRadius = ROOT.TH2F('h2MassRadius', r';Radius (cm); m({}^{3}_{#Lambda}H) (GeV/#it{c})', 100, 0, 40, 50, mass_low_limit, mass_high_limit)
 h2MassCosPA = ROOT.TH2F('h2MassCosPA', r';cos(#theta_{PA}); m({}^{3}_{#Lambda}H) (GeV/#it{c})', 100, 0.99, 1, 50, mass_low_limit, mass_high_limit)
 h2PtCosPA = ROOT.TH2F('h2PtCosPA', r';#it{p}_{T} (GeV/#it{c}); cos(#theta_{PA})', 10, 1, 6, 100, 0.98, 1)
 h2MassDecLen = ROOT.TH2F('h2MassDecLen', r';Decay length (cm); m({}^{3}_{#Lambda}H) (GeV/#it{c})', 100, 0, 40, 50, mass_low_limit, mass_high_limit)
@@ -112,9 +113,11 @@ hPtGen = ROOT.TH1F('hPtGen', r';#it{p}_{T}^{gen} (GeV/#it{c})', 8, np.array([1.4
 hPtGenFineBins = ROOT.TH1F('hPtGenFineBins', r';#it{p}_{T}^{gen} (GeV/#it{c})', 100, 0, 6)
 hPtGenFull = ROOT.TH1F('hPtGenFull', r';#it{p}_{T}^{gen} (GeV/#it{c})', 8, np.array([1.4, 1.7, 2., 2.3, 2.6, 3, 3.5, 4., 5], dtype=np.float64))
 
+hRadGen = ROOT.TH1F('hRadGen', r';Radius^{gen} (cm)', 50, 0, 40)
 hCtGen = ROOT.TH1F('hCtGen', r';#it{c}#tau (cm)', 50, 0, 40)
 hResolutionPt = ROOT.TH1F('hResolutionPt', r';(#it{p}_{T}^{rec} - #it{p}_{T}^{gen}) / #it{p}_{T}^{gen}', 50, -0.2, 0.2)
 hResolutionPtvsPt = ROOT.TH2F('hResolutionPtvsPt', r';#it{p}_{T}^{gen} (GeV/#it{c});(#it{p}_{T}^{rec} - #it{p}_{T}^{gen}) / #it{p}_{T}^{gen}', 50, 0, 5, 50, -0.2, 0.2)
+hResolutionRadvsRad = ROOT.TH2F('hResolutionRadvsRad', r';Radius^{gen} (cm);(Radius^{rec} - Radius^{gen}) / Radius^{gen}', 50, 0, 40, 50, -0.2, 0.2)
 hResolutionHe3PtvsPt = ROOT.TH2F('hResolutionHe3PtvsPt', r';#it{p}_{T}^{gen} (GeV/#it{c});(#it{p}_{T}^{rec} - #it{p}_{T}^{gen}) / #it{p}_{T}^{gen}', 50, 0, 5, 50, -0.2, 0.2)
 hResolutionPiPtvsPt = ROOT.TH2F('hResolutionPiPtvsPt', r';#it{p}_{T}^{gen} (GeV/#it{c});(#it{p}_{T}^{rec} - #it{p}_{T}^{gen}) / #it{p}_{T}^{gen}', 50, 0, 1, 50, -0.2, 0.2)
 hResolutionP = ROOT.TH1F('hResolutionP', r';(#it{p}^{rec} - #it{p}^{gen}) / #it{p}^{gen}', 50, -0.2, 0.2)
@@ -144,12 +147,13 @@ utils.correct_and_convert_df(df, calibrate_he_momentum, mc, is_h4l)
 
 ############# Apply pre-selections to MC #############
 if mc:
+    df.query('fIsTwoBodyDecay > 0', inplace=True)  # remove extreme pt gen values
     mc_pre_sels = 'fIsSurvEvSel==True'
     spectra_file = ROOT.TFile.Open('utils/heliumSpectraMB.root')
     he3_spectrum = spectra_file.Get('fCombineHeliumSpecLevyFit_0-100')
     spectra_file.Close()
-    # utils.reweight_pt_spectrum(df, 'fAbsGenPt', he3_spectrum)
-    # mc_pre_sels += 'rej==True'
+    utils.reweight_pt_spectrum(df, 'fAbsGenPt', he3_spectrum)
+    mc_pre_sels += ' and rej==True'
     if is_matter == 'matter':
         mc_pre_sels += 'and fGenPt>0'
     elif is_matter == 'antimatter':
@@ -161,6 +165,7 @@ if mc:
     utils.fill_th1_hist(hPtGen, df, 'fAbsGenPt')
     utils.fill_th1_hist(hPtGenFineBins, df, 'fAbsGenPt')
     utils.fill_th1_hist(hCtGen, df, 'fGenCt')
+    utils.fill_th1_hist(hRadGen, df, 'fGenDecRad')
     ## now we select only the reconstructed particles
     df.query('fIsReco==True', inplace=True)
 
@@ -199,6 +204,7 @@ utils.fill_th1_hist(hMass4LH, df, 'fMassH4L')
 utils.fill_th2_hist(h2Mass3LHVvsMass4LH, df, 'fMassH3L', 'fMassH4L')
 utils.fill_th2_hist(h2MassCosPA, df, 'fCosPA', mass_string)
 utils.fill_th2_hist(h2PtCosPA, df, 'fPt', 'fCosPA')
+utils.fill_th2_hist(h2MassRadius, df, 'fDecRad', mass_string)
 utils.fill_th2_hist(h2MassDecLen, df, 'fDecLen', mass_string)
 utils.fill_th2_hist(h2MassDCADaughters, df, 'fDcaV0Daug', mass_string)
 utils.fill_th2_hist(h2MassDCAHePv, df, 'fDcaHe', mass_string)
@@ -258,6 +264,7 @@ if 'fV2' in df.columns:
 # for MC only
 if mc:
     df.eval('resPt = (fPt - fAbsGenPt)/fAbsGenPt', inplace=True)
+    df.eval('resRad = (fDecRad - fGenDecRad)/fGenDecRad', inplace=True)
     df.eval('ResDecX = (fXDecVtx - fGenXDecVtx)/fGenXDecVtx', inplace=True)
     df.eval('ResDecY = (fYDecVtx - fGenYDecVtx)/fGenYDecVtx', inplace=True)
     df.eval('ResDecZ = (fZDecVtx - fGenZDecVtx)/fGenZDecVtx', inplace=True)
@@ -266,6 +273,7 @@ if mc:
     utils.fill_th1_hist(hResolutionDecVtxY, df, 'ResDecY')
     utils.fill_th1_hist(hResolutionDecVtxZ, df, 'ResDecZ')
     utils.fill_th2_hist_abs(hResolutionPtvsPt, df, 'fAbsGenPt', 'resPt')
+    utils.fill_th2_hist_abs(hResolutionRadvsRad, df, 'fGenDecRad', 'resRad')
 
 
 # save to file root
@@ -287,6 +295,7 @@ h2MassV2.Write()
 hMeanV2VsMass.Write()
 h2MassCosPA.Write()
 h2PtCosPA.Write()
+h2MassRadius.Write()
 h2MassDecLen.Write()
 h2MassDCADaughters.Write()
 h2MassDCAHePv.Write()
@@ -322,12 +331,14 @@ if mc:
     f.cd('MC')
     hResolutionPt.Write()
     hResolutionPtvsPt.Write()
+    hResolutionRadvsRad.Write()
     hResolutionDecVtxX.Write()
     hResolutionDecVtxY.Write()
     hResolutionDecVtxZ.Write()
     hPtGen.Write()
     hPtGenFineBins.Write()
     hCtGen.Write()
+    hRadGen.Write()
 
     h_eff = utils.computeEfficiency(hPtGen, hPtRec, 'hEffPt')
     h_eff.SetTitle(';#it{p}_{T} (GeV/#it{c}); Efficiency')
@@ -337,6 +348,12 @@ if mc:
     h_eff_ct.SetTitle(';#it{c#tau} (cm); Efficiency')
     h_eff_ct.Divide(hCtGen)
     h_eff_ct.Write()
+
+    h_eff_rad = hRadius.Clone('hEfficiencyRad')
+    h_eff_rad.SetTitle(';Radius (cm); Efficiency')
+    h_eff_rad.Divide(hRadGen)
+    h_eff_rad.Write()
+
 
     h_sigloss = utils.computeEfficiency(hPtGenFull, hPtGen, 'hSigLoss')
     h_sigloss.SetTitle(';#it{p}_{T} (GeV/#it{c}); Signal loss')

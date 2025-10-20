@@ -1,6 +1,6 @@
 mc: True
 is_h4l: False
-input_files: ["/data3/fmazzasc/hyp_run_3/mc/LHC25b9/AO2D.root"]
+input_files: ["/data3/fmazzasc/hyp_run_3/mc/custom_v0/25b9/AO2D.root"]
 output_dir: "../results/mc_analyse_tree/"
 output_file: "HypertritonResults_25b9"
 selection: {
