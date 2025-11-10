@@ -77,6 +77,7 @@ hPtRec = ROOT.TH1F('hPtRec', r';#it{p}_{T} (GeV/#it{c})', 8, np.array([1.4, 1.7,
 hCtRec = ROOT.TH1F('hCtRec', r';#it{c#tau} (cm)', 50, 0, 40)
 hRadius = ROOT.TH1F('hRadius', r';Radius (cm)', 50, 0, 40)
 hDecLen = ROOT.TH1F('hDecLen', r';Decay length (cm)', 100, 0, 40)
+hPVz = ROOT.TH1F('hPVz', r';Primary Vertex z (cm)', 100, -20, 20)
 hNSigHe = ROOT.TH1F('hNSigmaHe', r';n_{#sigma}^{TPC}({}^{3}He)', 50, -3, 3)
 h2NSigHe3VsMom = ROOT.TH2F('h2NSigHe3VsMom', r';{}^{3}He #it{p}_{T} (GeV/#it{c});n_{#sigma}^{TPC}({}^{3}He)', 50, -10, 10, 50, -3, 3)
 h2NSigHe4VsMom = ROOT.TH2F('h2NSigHe4VsMom', r';{}^{4}He #it{p}_{T} (GeV/#it{c});n_{#sigma}^{TPC}({}^{4}He)', 50, -10, 10, 50, -3, 3)
@@ -152,8 +153,8 @@ if mc:
     spectra_file = ROOT.TFile.Open('utils/heliumSpectraMB.root')
     he3_spectrum = spectra_file.Get('fCombineHeliumSpecLevyFit_0-100')
     spectra_file.Close()
-    utils.reweight_pt_spectrum(df, 'fAbsGenPt', he3_spectrum)
-    mc_pre_sels += ' and rej==True'
+    # utils.reweight_pt_spectrum(df, 'fAbsGenPt', he3_spectrum)
+    # mc_pre_sels += ' and rej==True'
     if is_matter == 'matter':
         mc_pre_sels += 'and fGenPt>0'
     elif is_matter == 'antimatter':
@@ -195,6 +196,7 @@ utils.fill_th1_hist(hCtRec, df, 'fCt')
 utils.fill_th1_hist(hCosPA, df, 'fCosPA')
 utils.fill_th1_hist(hRadius, df, 'fDecRad')
 utils.fill_th1_hist(hDecLen, df, 'fDecLen')
+utils.fill_th1_hist(hPVz, df, 'fZPrimVtx')
 utils.fill_th1_hist(hNTPCclus, df, 'fNTPCclusHe')
 utils.fill_th2_hist(h2NTPCclusPt, df, 'fPt', 'fNTPCclusHe')
 utils.fill_th2_hist(h2TPCChi2VsPt, df, 'fPt', 'fTPCChi2He')
@@ -285,6 +287,7 @@ hCtRec.Write()
 hCosPA.Write()
 hRadius.Write()
 hDecLen.Write()
+hPVz.Write()
 hNTPCclus.Write()
 h2NTPCclusPt.Write()
 h2TPCChi2VsPt.Write()

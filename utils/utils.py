@@ -153,7 +153,7 @@ def ndarray2roo(ndarray, var, name='data'):
     for i in ndarray:
         x[0] = i
         tree.Fill()
-    array_roo = ROOT.RooDataSet(name, 'dataset from tree', tree, ROOT.RooArgSet(var))
+    array_roo = ROOT.RooDataSet(ROOT.RooStringView(name), ROOT.RooStringView('dataset from tree'), ROOT.RooArgSet(var), ROOT.RooFit.Import(tree))
     return array_roo
 
 
@@ -222,19 +222,65 @@ def computeNSigmaHe3(df, isMC=False):
     nSigma = (df['fTPCsignalHe'] - expBB) / (0.09*df['fTPCsignalHe'])
     return nSigma
 
+
+def get_bin(h, label):
+    for ibin in range(1, h.GetNbinsX() + 1):
+        if h.GetXaxis().GetBinLabel(ibin) == label:
+            return ibin
+    return -1
+
+
 def getNEvents(an_files, is_trigger=False):
     n_ev = 0
-    if type(an_files) == str:
+    if isinstance(an_files, str):
         an_files = [an_files]
 
     for an_file in an_files:
-        an_file = ROOT.TFile(an_file)
-        print(an_file)
-        if is_trigger: 
-            zorro_summ = an_file.Get('hyper-reco-task').Get('zorroSummary;1')
-            n_ev += zorro_summ.getNormalisationFactor(0)
+        ff = ROOT.TFile(an_file)
+        if not ff or ff.IsZombie():
+            print(f"Could not open file: {an_file}")
+            continue
+        if is_trigger:
+            # === Replacement logic starts here ===
+            ff.cd('hyper-reco-task/Zorro')
+            total_sum = 0.0
+            for key in ROOT.gDirectory.GetListOfKeys():
+                key_name = key.GetName()
+                # Only process integer-named directories
+                if not key_name.isdigit():
+                    continue
+                # Get histograms
+                h_selections = ff.Get(f"hyper-reco-task/Zorro/{key_name}/Selections")
+                h_insp_tvx  = ff.Get(f"hyper-reco-task/Zorro/{key_name}/InspectedTVX")
+                h_anal_trig = ff.Get(f"hyper-reco-task/Zorro/{key_name}/AnalysedTriggersOfInterest")
+
+                if not (h_selections and h_insp_tvx and h_anal_trig):
+                    print(f"⚠️ Missing histograms in {key_name}, skipping.")
+                    continue
+                ibin_fHe = get_bin(h_selections, "fHe")
+                if ibin_fHe == -1:
+                    print(f"'fHe' bin not found in {key_name}, skipping.")
+                    continue
+                n_sel = h_selections.GetBinContent(ibin_fHe)
+                n_trig = h_anal_trig.GetBinContent(get_bin(h_anal_trig, "fHe"))
+                n_insp = h_insp_tvx.Integral()
+                if n_sel == 0:
+                    print(f"Zero selections in {key_name}, skipping to avoid division by zero.")
+                    continue
+
+                ntvx = n_insp * n_trig / n_sel
+                total_sum += ntvx
+            n_ev += total_sum
+            # === Replacement logic ends here ===
         else:
-            n_ev += an_file.Get('hyper-reco-task').Get('hZvtx').Integral()
+            # Default (non-trigger) behavior
+            h_zvtx = ff.Get('hyper-reco-task/hZvtx')
+            if h_zvtx:
+                n_ev += h_zvtx.Integral()
+            else:
+                print(f"⚠️ Missing hZvtx in {an_file}")
+
+        ff.Close()
 
     return n_ev
 

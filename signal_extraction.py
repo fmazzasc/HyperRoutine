@@ -68,7 +68,7 @@ class SignalExtraction:
             mass = ROOT.RooRealVar('m', self.inv_mass_string, 3.89, 3.97, 'GeV/#it{c}^{2}')
             mu = ROOT.RooRealVar('mu', 'hypernucl mass', 3.9, 3.95, 'GeV/#it{c}^{2}')
 
-        sigma = ROOT.RooRealVar('sigma', 'hypernucl width', 0.0011, 0.0024, 'GeV/#it{c}^{2}')
+        sigma = ROOT.RooRealVar('sigma', 'hypernucl width', 0.0011, 0.004, 'GeV/#it{c}^{2}')
         a1 = ROOT.RooRealVar('a1', 'a1', 0., 5.)
         a2 = ROOT.RooRealVar('a2', 'a2', 0., 5.)
         n1 = ROOT.RooRealVar('n1', 'n1', 0., 10.)
@@ -160,7 +160,7 @@ class SignalExtraction:
         self.data_frame_fit.SetName(self.data_frame_fit_name)
 
         self.roo_dataset.plotOn(self.data_frame_fit, ROOT.RooFit.Name('data'), ROOT.RooFit.DrawOption('p'))
-        self.pdf.plotOn(self.data_frame_fit, ROOT.RooFit.Components('bkg'), ROOT.RooFit.LineStyle(ROOT.kDashed), ROOT.RooFit.LineColor(kOrangeC))
+        self.pdf.plotOn(self.data_frame_fit, ROOT.RooFit.Components('bkg'), ROOT.RooFit.LineStyle(ROOT.kDashed), ROOT.RooFit.LineColor(kOrangeC), ROOT.RooFit.Name('bkg'))
         self.pdf.plotOn(self.data_frame_fit, ROOT.RooFit.LineColor(ROOT.kAzure + 2 ), ROOT.RooFit.Name('fit_func'))
 
 
@@ -240,7 +240,7 @@ class SignalExtraction:
         self.data_frame_fit.addObject(legend)
 
         fit_stats = {'signal': [signal_counts, signal_counts_error],
-                     'significance': [significance, significance_err], 's_b_ratio': [signal_int_val_3s/bkg_int_val_3s, s_b_ratio_err], 'chi2': chi2_data/ndf_data}
+                     'significance': [significance, significance_err], 's_b_ratio': [signal_int_val_3s/bkg_int_val_3s, s_b_ratio_err], 'chi2': chi2_data}
         
 
         if rooworkspace_path != None:
