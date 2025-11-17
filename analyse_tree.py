@@ -148,7 +148,6 @@ utils.correct_and_convert_df(df, calibrate_he_momentum, mc, is_h4l)
 
 ############# Apply pre-selections to MC #############
 if mc:
-    df.query('fIsTwoBodyDecay > 0', inplace=True)  # remove extreme pt gen values
     mc_pre_sels = 'fIsSurvEvSel==True'
     spectra_file = ROOT.TFile.Open('utils/heliumSpectraMB.root')
     he3_spectrum = spectra_file.Get('fCombineHeliumSpecLevyFit_0-100')
@@ -156,9 +155,9 @@ if mc:
     # utils.reweight_pt_spectrum(df, 'fAbsGenPt', he3_spectrum)
     # mc_pre_sels += ' and rej==True'
     if is_matter == 'matter':
-        mc_pre_sels += 'and fGenPt>0'
+        mc_pre_sels += ' and fGenPt>0'
     elif is_matter == 'antimatter':
-        mc_pre_sels += 'and fGenPt<0'
+        mc_pre_sels += ' and fGenPt<0'
     
     utils.fill_th1_hist(hPtGenFull, df, 'fAbsGenPt')
     df.query(mc_pre_sels, inplace=True)

@@ -197,7 +197,7 @@ spectra_maker.make_spectra()
 # create corrected spectra
 spectra_maker.make_histos()
 h3l_spectrum = LevyTsallis('levy', 2.99131)
-h3l_spectrum.SetParLimits(1, 10, 30)
+# h3l_spectrum.SetParLimits(1, 10, 30)
 h3l_spectrum.SetParLimits(3, 1e-08, 2.5e-08)
 h3l_spectrum.SetLineColor(kOrangeC)
 spectra_maker.fit_func = h3l_spectrum

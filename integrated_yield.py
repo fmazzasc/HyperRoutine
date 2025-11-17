@@ -16,48 +16,129 @@ if args.config_file == "":
     print('** No config file provided. Exiting. **')
     exit()
 
-
 config_file = open(args.config_file, 'r')
 config = yaml.full_load(config_file)
-
 input_file = ROOT.TFile(config['input_file_spectrum'])
 h3l_spectrum = input_file.Get(config['histo_stat_name'])
 h3l_spectrum_syst = input_file.Get(config['histo_syst_name'])
-syst_sig_extr = input_file.Get('std/hYieldSyst')
-hEff = input_file.Get('std/h_efficiency')
-hAbso = input_file.Get('std/h_abso_frac_pt')
+syst_sig_extr = input_file.Get('h_yields')
 h3l_spectrum.SetDirectory(0)
 syst_sig_extr.SetDirectory(0)
-
-## comparison with tommca model
-tommca_file = ROOT.TFile('utils/models/HypertritonToMCCA_gaus.root')
-tommca_pred = tommca_file.Get('MinBiasSpectrumCongleton')
-tommca_pred_gaus = tommca_file.Get('MinBiasSpectrumGaussian')
-tommca_pred.SetDirectory(0)
-tommca_pred_gaus.SetDirectory(0)
+syst_sig_extr.Fit('gaus', 'R')
 
 h3l_mass = 2.99131
-mt_expo = ROOT.TF1('mtexpo', '[2]*x*exp(-TMath::Sqrt(([0]*[0]+x*x))/[1])', 0., 6)
+mt_expo = ROOT.TF1('mtexpo', '[2]*x*exp(-TMath::Sqrt(([0]*[0]+x*x))/[1])', 0., 10)
 mt_expo.FixParameter(0, h3l_mass)
 mt_expo.SetParLimits(1, 0.1, 1)
 mt_expo.SetParLimits(2, 1.e-08, 1)
-pt_expo = ROOT.TF1('ptexpo', '[1]*x*exp(-x/[0])', 0., 6)
+
+pt_expo = ROOT.TF1('ptexpo', '[1]*x*exp(-x/[0])', 0., 10)
 pt_expo.SetParLimits(0, 0.1, 1)
 pt_expo.SetParLimits(1, 1.e-08, 1)
 levy = LevyTsallis('levy', h3l_mass)
-levy.SetParLimits(1, 10, 30)
-levy.SetParLimits(3, 1e-08, 2.5e-08)
+levy.SetParLimits(1, 5, 10)
+levy.SetParLimits(3, 1e-08, 4e-08)
 ## fit the spectrum with all the functions and get the integral of the fit functions
+
+integral_histo = 0
+integral_histo_error = 0
+for i in range(1, h3l_spectrum.GetNbinsX()+1):
+    bin_width = h3l_spectrum.GetXaxis().GetBinWidth(i)
+    bin_content = h3l_spectrum.GetBinContent(i)
+    integral_histo += bin_content * bin_width
+    bin_error = h3l_spectrum.GetBinError(i)
+    integral_histo_error += (bin_error * bin_width)**2
+integral_histo_error = np.sqrt(integral_histo_error)
+print(f'Integral of the histogram: {integral_histo} +/- {integral_histo_error}')
+
+lowest_pt_edge = h3l_spectrum.GetXaxis().GetBinLowEdge(1)
+
 h3l_spectrum.Fit(mt_expo, 'R')
+mt_expo_integral = [mt_expo.Integral(0., lowest_pt_edge), mt_expo.IntegralError(0., lowest_pt_edge)]
 h3l_spectrum.Fit(pt_expo, 'R')
+pt_expo_integral = [pt_expo.Integral(0., lowest_pt_edge), pt_expo.IntegralError(0., lowest_pt_edge)]
 h3l_spectrum.Fit(levy, 'R')
+levy_integral = [levy.Integral(0, lowest_pt_edge), levy.IntegralError(0, lowest_pt_edge)]
+
+rms_extr= np.std([mt_expo_integral[0], pt_expo_integral[0], levy_integral[0]])
+rel_unc_extr = rms_extr / np.mean([mt_expo_integral[0], pt_expo_integral[0], levy_integral[0]])
+syst_sig_extr_rms = syst_sig_extr.GetFunction('gaus').GetParameter(2)
+syst_sig_extr_mean = syst_sig_extr.GetFunction('gaus').GetParameter(1)
+
+
+## do a gaussian sampling of the statistical distribution, for each toy compute the yield with the three functions and get the RMS of the distribution
+
+n_toys = 10000
+yield_toy_mt = []
+yield_toy_pt = []
+yield_toy_levy = []
+for i in range(n_toys):
+    # sample the histogram
+    h3l_spectrum_toy = h3l_spectrum.Clone('h3l_spectrum_toy')
+    for j in range(1, h3l_spectrum_toy.GetNbinsX()+1):
+        content = np.random.normal(h3l_spectrum.GetBinContent(j), h3l_spectrum.GetBinError(j))
+        if content < 0:
+            content = 0.
+        h3l_spectrum_toy.SetBinContent(j, content)
+    # fit with the three functions
+    h3l_spectrum_toy.Fit(mt_expo, 'SRQ')
+    mt_yield = mt_expo.Integral(0., lowest_pt_edge)
+    h3l_spectrum_toy.Fit(pt_expo, 'RSQ')
+    pt_yield = pt_expo.Integral(0., lowest_pt_edge)
+    h3l_spectrum_toy.Fit(levy, 'RSQ')
+    levy_yield = levy.Integral(0., lowest_pt_edge)
+
+    yield_toy_mt.append(mt_yield)
+    yield_toy_pt.append(pt_yield)
+    yield_toy_levy.append(levy_yield)
+
+yield_toy_mt = np.array(yield_toy_mt)
+yield_toy_pt = np.array(yield_toy_pt)
+yield_toy_levy = np.array(yield_toy_levy)
+
+histo_toys = []
+for yields, name in zip([yield_toy_mt, yield_toy_pt, yield_toy_levy], ['mt_expo', 'pt_expo', 'levy']):
+    histo = ROOT.TH1F(f'histo_toys_{name}', f'histo_toys_{name}', 100, np.min(yields), np.max(yields))
+    for y in yields:
+        histo.Fill(y)
+    histo_toys.append(histo)
+
+yield_final = levy_integral[0] + integral_histo
+stat_unc = integral_histo_error
+
+fit_function_syst = np.std([np.mean(yield_toy_mt), np.mean(yield_toy_pt), np.mean(yield_toy_levy)])
+histo_fit_func_syst = ROOT.TH1F('histo_fit_func_syst', 'histo_fit_func_syst', 1, 0, 1)
+histo_fit_func_syst.SetBinContent(1, fit_function_syst)
+absorption_relative_syst = 0.03
+br_relative_syst = 0.08
+extrapolation_syst = yield_toy_levy.std()
+
+normalistion_relative_unc = 0.1
+
+total_syst = np.sqrt((br_relative_syst * yield_final)**2 + (absorption_relative_syst * yield_final)**2 + (syst_sig_extr_rms)**2 + (fit_function_syst)**2 + (extrapolation_syst)**2 + (normalistion_relative_unc * yield_final)**2)
+relative_syst = total_syst / yield_final
+
+
+print('--------------------------------------------')
+print('Final result for integrated yield:')
+print(f'  - dN/dy = {yield_final:.6e} +/- {stat_unc:.6e} (stat) +/- {total_syst:.6e} (syst)')
+print('--------------------------------------------')
+
+print('Breakdown of systematic uncertainties:')
+print(f'  - signal selection and extraction: {syst_sig_extr_rms:.6e} ({syst_sig_extr_rms / yield_final * 100:.2f} %)')
+print(f'  - fit function choice: {fit_function_syst:.6e} ({fit_function_syst / yield_final * 100:.2f} %)')
+print(f'  - absorption correction: {(absorption_relative_syst * yield_final):.6e} ({absorption_relative_syst * 100:.2f} %)')
+print(f'  - branching ratio: {(br_relative_syst * yield_final):.6e} ({br_relative_syst * 100:.2f} %)')
+print(f'  - extrapolation to zero pT: {extrapolation_syst:.6e} ({extrapolation_syst / yield_final * 100:.2f} %)')
+print('--------------------------------------------')
+
 ## plot all the fit functions and the datapoint into a single canvas
 canvas = ROOT.TCanvas('canvas', 'canvas', 800, 600)
 canvas.SetLogy()
 ## draw a new frame
-canvas.DrawFrame(0, h3l_spectrum.GetMinimum(), 6, h3l_spectrum.GetMaximum()*10, f';{h3l_spectrum.GetXaxis().GetTitle()};{h3l_spectrum.GetYaxis().GetTitle()}')
+canvas.DrawFrame(0, h3l_spectrum.GetMinimum(), 10, h3l_spectrum.GetMaximum()*10, f';{h3l_spectrum.GetXaxis().GetTitle()};{h3l_spectrum.GetYaxis().GetTitle()}')
 ## set x-axis range from 0 to 6
-h3l_spectrum.GetXaxis().SetRangeUser(0., 6.)
+# h3l_spectrum.GetXaxis().SetRangeUser(0., 6.)
 h3l_spectrum.SetMarkerStyle(20)
 h3l_spectrum.SetMarkerSize(0.5)
 h3l_spectrum.SetMarkerColor(ROOT.kBlack)
@@ -88,67 +169,7 @@ leg_canvas.Draw()
 
 
 
-## connected errorband using a TGraphErrors
-gr = ROOT.TGraphErrors(tommca_pred)
-gr.SetMarkerSize(0)
-gr.SetLineWidth(2)
-gr.SetLineColor(ROOT.kRed)
-gr.SetMarkerColor(ROOT.kRed)
-gr.SetFillColorAlpha(ROOT.kRed, 0.5)
-gr_gaus = ROOT.TGraphErrors(tommca_pred_gaus)
-gr_gaus.SetMarkerSize(0)
-gr_gaus.SetLineWidth(2)
-gr_gaus.SetLineColor(ROOT.kOrange)
-gr_gaus.SetMarkerColor(ROOT.kOrange)
-gr_gaus.SetFillColorAlpha(ROOT.kOrange, 0.5)
-# plot tomcca predictions as a shaded red error band
-pinfo_alice = ROOT.TPaveText(0.49, 0.65, 0.89, 0.85, 'NDC')
-pinfo_alice.SetBorderSize(0)
-pinfo_alice.SetFillStyle(0)
-pinfo_alice.SetTextAlign(11)
-pinfo_alice.SetTextFont(42)
-pinfo_alice.AddText('ALICE, pp,#kern[0.4]{#sqrt{#it{s}}} = 13.6 TeV')
-pinfo_alice.AddText('#it{L}_{int} = 52 pb^{-1}')
-pinfo_alice.AddText('#pm 10% global unc. not shown')
-
-c = ROOT.TCanvas('c', 'c', 800, 600)
-## increase left margin to make room for the y-axis label
-ROOT.gPad.SetLeftMargin(0.15)
-frame = c.DrawFrame(0.2, 0.6e-10, 6, 2.1e-08, r';#it{p}_{T} (GeV/#it{c});#frac{1}{#it{N}_{evt}}#frac{d^{2}#it{N}}{d#it{y}d#it{p}_{T}} (GeV/#it{c})^{-1}')
-## set title y offset
-frame.GetYaxis().SetTitleOffset(1.3)
-c.SetLogy()
-gr.Draw('3 same')
-gr_gaus.Draw('3 same')
-h3l_spectrum.Draw('PEX0 SAME')
-h3l_spectrum_syst.Draw('PE2 SAME')
-h3l_spectrum.GetListOfFunctions().Clear()
-h3l_spectrum_syst.GetListOfFunctions().Clear()
-pinfo_alice.Draw()
-leg_data = ROOT.TLegend(0.19, 0.36, 0.6, 0.46)
-leg_data.SetFillStyle(0)
-leg_data.SetBorderSize(0)
-leg_data.SetTextFont(42)
-leg_data.SetMargin(0.1)
-## fix text size
-leg_data.SetTextSize(0.037)
-leg_data.AddEntry(h3l_spectrum, '{}^{3}_{#bar{#Lambda}}#bar{H}#kern[0.3]{#rightarrow}#kern[0.1]{^{3}#bar{He}}#kern[0.3]{+}#kern[0.3]{#pi^{+}}, |#it{y}| < 1', 'PE')
-leg = ROOT.TLegend(0.19, 0.15, 0.65, 0.36)
-leg.SetFillStyle(0)
-leg.SetBorderSize(0)
-leg.SetTextFont(42)
-leg.SetMargin(0.1)
-leg.SetTextSize(0.037)
-leg.SetHeader('	arXiv:2504.02491 (2025)')
-leg.AddEntry(gr, 'Congleton Wave Function', 'F')
-leg.AddEntry(gr_gaus, 'd#minus#Lambda Gaussian Wave Function', 'F')
-leg_data.Draw()
-leg.Draw()
-c.SaveAs(config['output_file'].replace('.root', '_pt_spectrum.pdf'))
-
 outfile = ROOT.TFile(config['output_file'], 'RECREATE')
-hEff.Write('h_efficiency')
-hAbso.Write('h_abso_frac_pt')
 h3l_spectrum.Write('hStat')
 h3l_spectrum_syst.Write('hSyst')
 syst_sig_extr.Write('hSystDistr')
@@ -156,37 +177,8 @@ syst_sig_extr.Write('hSystDistr')
 mt_expo.Write('mt_expo')
 pt_expo.Write('pt_expo')
 levy.Write('levy')
-
 canvas.Write('canvas')
-c.Write('canvas_pt')
 
-
-## print
-mt_expo_integral = mt_expo.Integral(0., 6.)
-pt_expo_integral = pt_expo.Integral(0., 6.)
-levy_integral = levy.Integral(0., 6.)
-print('mt_expo integral: ', mt_expo_integral, ' +/- ', mt_expo.IntegralError(0., 6.))
-print('pt_expo integral: ', pt_expo_integral, ' +/- ', pt_expo.IntegralError(0., 6.))
-print('levy integral: ', levy_integral, ' +/- ', levy.IntegralError(0., 6.))
-
-stat_unc = levy.IntegralError(0., 6.)
-rms_extr= np.std([mt_expo_integral, pt_expo_integral, levy_integral])
-rel_unc_extr = rms_extr / np.mean([mt_expo_integral, pt_expo_integral, levy_integral])
-
-## syst unc due to signal extraction and selection
-syst_sig_extr.Fit('gaus', 'R')
-## get rms of the gaussian fit
-syst_sig_extr_rms = syst_sig_extr.GetFunction('gaus').GetParameter(2)
-syst_sig_extr_mean = syst_sig_extr.GetFunction('gaus').GetParameter(1)
-rel_unc_sig_extr = syst_sig_extr_rms / syst_sig_extr_mean
-
-## sum all the uncertainties in quadrature
-total_rel_unc = np.sqrt(rel_unc_extr**2 + rel_unc_sig_extr**2)
-total_unc = total_rel_unc * levy_integral
-print('Total uncertainty (syst): ', total_unc)
-print('Total uncertainty (stat): ', stat_unc)
-print('Levy integral: ', levy_integral, ' +/- ', total_unc, ' (syst), ', stat_unc, ' (stat)')
-
-
-
-
+histo_fit_func_syst.Write('histo_fit_func_syst')
+for histo in histo_toys:
+    histo.Write()

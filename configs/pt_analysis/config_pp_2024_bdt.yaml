@@ -10,12 +10,13 @@ input_files_data:
 input_files_mc: 
   [
   "/data3/fmazzasc/hyp_run_3/mc/custom/LHC25b9/AO2D.root",
-  "/data3/fmazzasc/hyp_run_3/mc/custom/LHC25i2/AO2D.root",
 
   ]
 additional_training_datasets_mc: 
   [
-  "/data3/fmazzasc/hyp_run_3/mc/custom/LHC25f1/AO2D.root"
+  "/data3/fmazzasc/hyp_run_3/mc/custom/LHC25i2/AO2D.root",
+  "/data3/fmazzasc/hyp_run_3/mc/custom/LHC25f1/AO2D.root",
+
   ]
 input_analysis_results_file:
   [
@@ -28,7 +29,7 @@ output_file_suffix: "pp2024"
 
 debug: True
 ## analysis options
-do_training: True
+do_training: False
 do_application: True
 do_yield: True
 
@@ -36,11 +37,11 @@ do_yield: True
 calibrate_he_momentum : True
 coal_based_mc: True
 is_matter: "antimatter"
-pt_bins: [1.5, 1.8, 2.1, 2.4, 2.7, 3.0, 3.5, 4.0, 5.0]
+pt_bins:  [1.4, 1.7, 2., 2.3, 2.6, 3, 3.5, 4., 5]
 bin_structure:
   [
     {
-      "pt_bins": [[1.5, 1.8], [1.8, 2.1], [2.1, 2.4], [2.4, 2.7], [2.7, 3.0], [3.0, 3.5], [3.5, 4.0], [4.0, 5.0]],
+      "pt_bins": [[1.4, 1.7], [1.7, 2], [2, 2.3], [2.3, 2.6], [2.6, 3], [3, 3.5], [3.5, 4], [4, 5]],
       "bdt_eff_cut": 0.75,
       "bdt_syst_range": 0.1,
       bkg_fit_func: ["pol2", "expo"],
@@ -60,7 +61,7 @@ bin_structure:
 train_bkg_fraction: 10
 random_state: 42
 n_cores: 32
-training_variables: ["fDcaHe", "fDcaPi", "fCosPA", "fDcaV0Daug"]
+training_variables: ["fDcaHe", "fDcaPi", "fCosPA", "fCt"]
 models_dir: "../results/2024_bdt_models/"
 ml_plots_dir: "../results/2024_bdt_plots/"
 

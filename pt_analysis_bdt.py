@@ -255,7 +255,7 @@ if do_application:
         sig_functions = bin_struct['signal_fit_func']
         bkg_functions = bin_struct['bkg_fit_func']
         for sig_func, bkg_func in product(sig_functions, bkg_functions):
-            raw_counts_hist = ROOT.TH1D(f'raw_counts_ptbin_{ibin}_sig_{sig_func}_bkg_{bkg_func}', f';BDT Eff;Raw counts', len(bdt_eff_array), bdt_eff_array[0] - 0.005, bdt_eff_array[-1] + 0.005)
+            raw_counts_hist = ROOT.TH1D(f'raw_counts_ptbin_{ibin}_sig_{sig_func}_bkg_{bkg_func}', f';BDT Efficiency; Raw counts / BDT efficiency', len(bdt_eff_array), bdt_eff_array[0] - 0.005, bdt_eff_array[-1] + 0.005)
             outdir_fits = pt_dir.mkdir(f'fits_sig_{sig_func}_bkg_{bkg_func}')
             outdir_fits.cd()
             for eff, score in zip(bdt_eff_array, bdt_score_eff_array):
@@ -383,7 +383,7 @@ if do_yield:
     ## loop over trials, choose a random combination and fill the final syst histo
     n_comb = 500 
     h3l_spectrum = LevyTsallis('levy', 2.99131)
-    # h3l_spectrum.SetParLimits(1, 10, 30)
+    h3l_spectrum.SetParLimits(1, 4, 30)
     h3l_spectrum.SetParLimits(3, 1e-08, 2.5e-08)
 
     list_yields = []
@@ -402,9 +402,10 @@ if do_yield:
             h_temp_spectrum.SetBinContent(ibin + 1, combo_vals[ibin])
             h_temp_spectrum.SetBinError(ibin + 1, combo_errs[ibin])
         ## fit the spectrum with levy function
-        h_temp_spectrum.Fit(h3l_spectrum, 'R')
+        fit_result = h_temp_spectrum.Fit(h3l_spectrum, 'SRQ')
         integral = h3l_spectrum.Integral(0, 10)
-        list_yields.append(integral)
+        if fit_result.Prob() >= 0.05 and integral < 2.4e-08:
+            list_yields.append(integral)
     
     h_yields = ROOT.TH1D('h_yields', ';Yield;Counts', 50, np.min(list_yields)*0.8, np.max(list_yields)*1.2)
     for yield_val in list_yields:
@@ -417,6 +418,7 @@ if do_yield:
     h_default_spectrum_stat.Write()
     h_default_spectrum_syst.Write()
     h_yields.Write()
+    absorption_histo.Write()
     output_yield_file.Close()
     print("** Yield calculation finished ** \n")
     print("----------------------------------")

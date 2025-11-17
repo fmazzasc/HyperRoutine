@@ -1,21 +1,21 @@
 input_files_data:
   [
-    "/data3/fmazzasc/hyp_run_3/pp2023/skimmed/AO2D.root",
-    "/data3/fmazzasc/hyp_run_3/pp2024/full/AO2D.root",
+    "/data3/fmazzasc/hyp_run_3/pp2024/svert/AO2D.root",
+
   ]
 input_files_mc: [
-  "/data3/fmazzasc/hyp_run_3/mc/LHC25f1/AO2D.root"
+  "/data3/fmazzasc/hyp_run_3/mc/LHC25b9/AO2D.root",
   ]
 coal_based_mc: False
 
 input_analysis_results_file:
   [
-    "/data3/fmazzasc/hyp_run_3/pp2023/skimmed/AnalysisResults.root",
-    "/data3/fmazzasc/hyp_run_3/pp2024/full/AnalysisResults.root",
+    "/data3/fmazzasc/hyp_run_3/pp2024/svert/AnalysisResults.root",
+
   ]
   
 output_dir: "../results/2024_pt_analysis/"
-output_file: "pt_analysis_antimat_2024"
+output_file: "pt_analysis_antimat_2024_svert"
 
 
 # analysis settings
@@ -30,14 +30,14 @@ sigma_range_mc_to_data: [1.01, 1.1]
 
 # yield calculation
 is_trigger: True
-event_loss: 0.82
+event_loss: 0.8
 signal_loss: 0.77
 absorption_histo_file: "../results/absorption/absorption_histos.root"
 
 # systematic uncertainties
 absorption_syst: 0.03
 br_syst: 0.1
-do_syst: False
+do_syst: True
 n_trials: 500
 
 23_24_eff_scaling: 0.986
@@ -53,6 +53,7 @@ bin_structure:
       "fEtaHe3" : "abs(fEtaHe3) < 0.9",
       "fEtaPi" : "abs(fEtaPi) < 0.9",
       "fCosPA": "fCosPA > 0.999",
+      "fDcaHe": "abs(fDcaHe) > 0.01",
       "fNSigmaHe": "abs(fNSigmaHe) < 2.5",
       "fTPCsignalPi": "fTPCsignalPi < 1000.",
       "fNTPCclusPi": "fNTPCclusPi > 70",
@@ -80,6 +81,7 @@ bin_structure:
       "fEtaHe3" : "abs(fEtaHe3) < 0.9",
       "fEtaPi" : "abs(fEtaPi) < 0.9",
       "fCosPA": "fCosPA > 0.99",
+      "fDcaHe": "abs(fDcaHe) > 0.01",
       "fNSigmaHe": "abs(fNSigmaHe) < 2.5",
       "fTPCsignalPi": "fTPCsignalPi < 1000.",
       "fNTPCclusPi": "fNTPCclusPi > 70",
@@ -107,6 +109,7 @@ bin_structure:
       "fEtaHe3" : "abs(fEtaHe3) < 0.9",
       "fEtaPi" : "abs(fEtaPi) < 0.9",
       "fCosPA": "fCosPA > 0.995",
+      "fDcaHe": "abs(fDcaHe) > 0.01",
       "fNSigmaHe": "abs(fNSigmaHe) < 2.5",
       "fTPCsignalPi": "fTPCsignalPi < 1000.",
       "fNTPCclusPi": "fNTPCclusPi > 70",

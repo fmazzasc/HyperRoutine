@@ -69,8 +69,8 @@ class SignalExtraction:
             mu = ROOT.RooRealVar('mu', 'hypernucl mass', 3.9, 3.95, 'GeV/#it{c}^{2}')
 
         sigma = ROOT.RooRealVar('sigma', 'hypernucl width', 0.0011, 0.004, 'GeV/#it{c}^{2}')
-        a1 = ROOT.RooRealVar('a1', 'a1', 0., 5.)
-        a2 = ROOT.RooRealVar('a2', 'a2', 0., 5.)
+        a1 = ROOT.RooRealVar('a1', 'a1', 0., 10.)
+        a2 = ROOT.RooRealVar('a2', 'a2', 0., 10.)
         n1 = ROOT.RooRealVar('n1', 'n1', 0., 10.)
         n2 = ROOT.RooRealVar('n2', 'n2', 0., 10.)
         c0 = ROOT.RooRealVar('c0', 'constant c0', -1., 1)
