@@ -141,8 +141,6 @@ canvas.DrawFrame(0, h3l_spectrum.GetMinimum(), 10, h3l_spectrum.GetMaximum()*10,
 # h3l_spectrum.GetXaxis().SetRangeUser(0., 6.)
 h3l_spectrum.SetMarkerStyle(20)
 h3l_spectrum.SetMarkerSize(0.5)
-h3l_spectrum.SetMarkerColor(ROOT.kBlack)
-h3l_spectrum.SetLineColor(ROOT.kBlack)
 ## remove fit function attached to the histogram
 h3l_spectrum.SetStats(0)
 h3l_spectrum.GetListOfFunctions().Delete()

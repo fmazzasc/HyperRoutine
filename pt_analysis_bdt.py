@@ -302,7 +302,9 @@ if do_yield:
     br = 0.25
     delta_rap = 2.0
     h_default_spectrum_stat = ROOT.TH1D('h_default_spectrum_stat', ';p_{T} (GeV/c);Counts', len(pt_bins) - 1, np.array(pt_bins))
+    utils.setHistStyle(h_default_spectrum_stat, ROOT.kAzure + 2)
     h_default_spectrum_syst = ROOT.TH1D('h_default_spectrum_syst', ';p_{T} (GeV/c);Counts', len(pt_bins) - 1, np.array(pt_bins))
+    utils.setHistStyle(h_default_spectrum_syst, ROOT.kAzure + 2)
 
     trials = []
 
