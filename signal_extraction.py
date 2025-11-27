@@ -27,6 +27,7 @@ class SignalExtraction:
         self.additional_pave_text = '' ## additional text to be added to the ALICE performance pave
         self.colliding_system = 'pp'
         self.energy = 13.6
+        pt_range = [0, 9]
 
         ## fit-related variables
         self.pdf = None
@@ -208,7 +209,7 @@ class SignalExtraction:
         pinfo_alice.SetFillStyle(0)
         pinfo_alice.SetTextAlign(11)
         pinfo_alice.SetTextFont(42)
-        pinfo_alice.AddText('ALICE Performance')
+        pinfo_alice.AddText('ALICE')
         
         sqrtsnn = "#sqrt{#it{s}}"
         if self.colliding_system != 'pp':
@@ -218,7 +219,7 @@ class SignalExtraction:
         self.n_evts = self.n_evts / 10**(exponent)
         pinfo_alice.AddText('#it{N}_{evt} = ' + f'{self.n_evts:.1f} ' + '#times 10^{' + f'{exponent:.0f}' + '}') 
         pinfo_alice.AddText(decay_string)
-        pinfo_alice.AddText('0 #leq #it{p}_{T} < 9 GeV/#it{c}, |y| < 1')
+        pinfo_alice.AddText(f'{self.pt_range[0]} ' + '#leq #it{p}_{T} < ' + f'{self.pt_range[1]} ' + 'GeV/#it{c}, |y| < 1')
 
         if self.additional_pave_text != '':
             pinfo_alice.AddText(self.additional_pave_text)

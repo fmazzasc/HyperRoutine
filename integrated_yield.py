@@ -7,7 +7,7 @@ import argparse
 ## levy-tsallis is defined in the file AdditionalFunctions.h
 ROOT.gROOT.SetBatch(True)
 ROOT.gROOT.ProcessLine('.L utils/AdditionalFunctions.h++')
-from ROOT import LevyTsallis
+from ROOT import LevyTsallis, Boltzmann, Bylinkin
 
 parser = argparse.ArgumentParser(description='Configure the parameters of the script.')
 parser.add_argument('--config-file', dest='config_file', help="path to the YAML file with configuration.", default='')
@@ -27,18 +27,19 @@ syst_sig_extr.SetDirectory(0)
 syst_sig_extr.Fit('gaus', 'R')
 
 h3l_mass = 2.99131
+
 mt_expo = ROOT.TF1('mtexpo', '[2]*x*exp(-TMath::Sqrt(([0]*[0]+x*x))/[1])', 0., 10)
 mt_expo.FixParameter(0, h3l_mass)
 mt_expo.SetParLimits(1, 0.1, 1)
 mt_expo.SetParLimits(2, 1.e-08, 1)
 
-pt_expo = ROOT.TF1('ptexpo', '[1]*x*exp(-x/[0])', 0., 10)
-pt_expo.SetParLimits(0, 0.1, 1)
-pt_expo.SetParLimits(1, 1.e-08, 1)
 levy = LevyTsallis('levy', h3l_mass)
 levy.SetParLimits(1, 5, 10)
 levy.SetParLimits(3, 1e-08, 4e-08)
-## fit the spectrum with all the functions and get the integral of the fit functions
+
+boltzmann = Boltzmann('boltzmann', h3l_mass)
+# bylinkin = Bylinkin('bylinkin', h3l_mass) 
+
 
 integral_histo = 0
 integral_histo_error = 0
@@ -55,23 +56,31 @@ lowest_pt_edge = h3l_spectrum.GetXaxis().GetBinLowEdge(1)
 
 h3l_spectrum.Fit(mt_expo, 'R')
 mt_expo_integral = [mt_expo.Integral(0., lowest_pt_edge), mt_expo.IntegralError(0., lowest_pt_edge)]
-h3l_spectrum.Fit(pt_expo, 'R')
-pt_expo_integral = [pt_expo.Integral(0., lowest_pt_edge), pt_expo.IntegralError(0., lowest_pt_edge)]
 h3l_spectrum.Fit(levy, 'R')
 levy_integral = [levy.Integral(0, lowest_pt_edge), levy.IntegralError(0, lowest_pt_edge)]
+h3l_spectrum.Fit(boltzmann, 'R')
+boltzmann_integral = [boltzmann.Integral(0, lowest_pt_edge), boltzmann.IntegralError(0, lowest_pt_edge)]
+# h3l_spectrum.Fit(bylinkin, 'R')
+# bylinkin_integral = [bylinkin.Integral(0, lowest_pt_edge), bylinkin.IntegralError(0, lowest_pt_edge)]
 
-rms_extr= np.std([mt_expo_integral[0], pt_expo_integral[0], levy_integral[0]])
-rel_unc_extr = rms_extr / np.mean([mt_expo_integral[0], pt_expo_integral[0], levy_integral[0]])
+
+print('--------------------------------------------')
+print('Extrapolated yields from different fit functions:')
+print(f'  - mT exponential: {mt_expo_integral[0]:.6e} +/- {mt_expo_integral[1]:.6e}')
+print(f'  - Levy-Tsallis:   {levy_integral[0]:.6e} +/- {levy_integral[1]:.6e}')
+print(f'  - Boltzmann:      {boltzmann_integral[0]:.6e} +/- {boltzmann_integral[1]:.6e}')
+
+rms_extr= np.std([mt_expo_integral[0], levy_integral[0], boltzmann_integral[0]])
+rel_unc_extr = rms_extr / np.mean([mt_expo_integral[0], levy_integral[0], boltzmann_integral[0]])
 syst_sig_extr_rms = syst_sig_extr.GetFunction('gaus').GetParameter(2)
 syst_sig_extr_mean = syst_sig_extr.GetFunction('gaus').GetParameter(1)
 
-
 ## do a gaussian sampling of the statistical distribution, for each toy compute the yield with the three functions and get the RMS of the distribution
-
 n_toys = 10000
 yield_toy_mt = []
-yield_toy_pt = []
 yield_toy_levy = []
+yield_toy_boltz = []
+# yield_toy_bylinkin = []
 for i in range(n_toys):
     # sample the histogram
     h3l_spectrum_toy = h3l_spectrum.Clone('h3l_spectrum_toy')
@@ -83,21 +92,26 @@ for i in range(n_toys):
     # fit with the three functions
     h3l_spectrum_toy.Fit(mt_expo, 'SRQ')
     mt_yield = mt_expo.Integral(0., lowest_pt_edge)
-    h3l_spectrum_toy.Fit(pt_expo, 'RSQ')
-    pt_yield = pt_expo.Integral(0., lowest_pt_edge)
     h3l_spectrum_toy.Fit(levy, 'RSQ')
     levy_yield = levy.Integral(0., lowest_pt_edge)
+    h3l_spectrum_toy.Fit(boltzmann, 'RSQ')
+    boltz_yield = boltzmann.Integral(0., lowest_pt_edge)
+    # h3l_spectrum_toy.Fit(bylinkin, 'RSQ')
+    # bylinkin_yield = bylinkin.Integral(0., lowest_pt_edge)
 
     yield_toy_mt.append(mt_yield)
-    yield_toy_pt.append(pt_yield)
     yield_toy_levy.append(levy_yield)
+    yield_toy_boltz.append(boltz_yield)
+    # yield_toy_bylinkin.append(bylinkin_yield)
+
 
 yield_toy_mt = np.array(yield_toy_mt)
-yield_toy_pt = np.array(yield_toy_pt)
 yield_toy_levy = np.array(yield_toy_levy)
+yield_toy_boltz = np.array(yield_toy_boltz)
+# yield_toy_bylinkin = np.array(yield_toy_bylinkin)
 
 histo_toys = []
-for yields, name in zip([yield_toy_mt, yield_toy_pt, yield_toy_levy], ['mt_expo', 'pt_expo', 'levy']):
+for yields, name in zip([yield_toy_mt, yield_toy_levy, yield_toy_boltz], ['mt_expo', 'levy', 'boltzmann']):
     histo = ROOT.TH1F(f'histo_toys_{name}', f'histo_toys_{name}', 100, np.min(yields), np.max(yields))
     for y in yields:
         histo.Fill(y)
@@ -106,7 +120,7 @@ for yields, name in zip([yield_toy_mt, yield_toy_pt, yield_toy_levy], ['mt_expo'
 yield_final = levy_integral[0] + integral_histo
 stat_unc = integral_histo_error
 
-fit_function_syst = np.std([np.mean(yield_toy_mt), np.mean(yield_toy_pt), np.mean(yield_toy_levy)])
+fit_function_syst = np.std([np.mean(yield_toy_mt), np.mean(yield_toy_levy), np.mean(yield_toy_boltz)])
 histo_fit_func_syst = ROOT.TH1F('histo_fit_func_syst', 'histo_fit_func_syst', 1, 0, 1)
 histo_fit_func_syst.SetBinContent(1, fit_function_syst)
 absorption_relative_syst = 0.03
@@ -130,6 +144,7 @@ print(f'  - fit function choice: {fit_function_syst:.6e} ({fit_function_syst / y
 print(f'  - absorption correction: {(absorption_relative_syst * yield_final):.6e} ({absorption_relative_syst * 100:.2f} %)')
 print(f'  - branching ratio: {(br_relative_syst * yield_final):.6e} ({br_relative_syst * 100:.2f} %)')
 print(f'  - extrapolation to zero pT: {extrapolation_syst:.6e} ({extrapolation_syst / yield_final * 100:.2f} %)')
+print(f'  - normalisation uncertainty: {(normalistion_relative_unc * yield_final):.6e} ({normalistion_relative_unc * 100:.2f} %)')
 print('--------------------------------------------')
 
 ## plot all the fit functions and the datapoint into a single canvas
@@ -148,21 +163,21 @@ h3l_spectrum.Draw("same")
 mt_expo.SetLineColor(ROOT.kRed)
 mt_expo.SetLineWidth(2)
 mt_expo.Draw('same')
-pt_expo.SetLineColor(ROOT.kBlue)
-pt_expo.SetLineWidth(2)
-pt_expo.Draw('same')
 levy.SetLineColor(ROOT.kGreen)
 levy.SetLineWidth(2)
 levy.Draw('same')
+boltzmann.SetLineColor(ROOT.kMagenta)
+boltzmann.SetLineWidth(2)
+boltzmann.Draw('same')
 leg_canvas = ROOT.TLegend(0.15, 0.6, 0.4, 0.85)
 leg_canvas.SetFillStyle(0)
 leg_canvas.SetBorderSize(0)
 leg_canvas.SetTextFont(42)
 leg_canvas.SetMargin(0.1)
 leg_canvas.SetTextSize(0.037)
-leg_canvas.AddEntry(levy, 'Levy-Tsallis fit', 'L')
 leg_canvas.AddEntry(mt_expo, '#it{m}_{T} exponential fit', 'L')
-leg_canvas.AddEntry(pt_expo, '#it{p}_{T} exponential fit', 'L')
+leg_canvas.AddEntry(levy, 'Levy-Tsallis fit', 'L')
+leg_canvas.AddEntry(boltzmann, 'Boltzmann fit', 'L')
 leg_canvas.Draw()
 
 
@@ -173,8 +188,8 @@ h3l_spectrum_syst.Write('hSyst')
 syst_sig_extr.Write('hSystDistr')
 
 mt_expo.Write('mt_expo')
-pt_expo.Write('pt_expo')
 levy.Write('levy')
+boltzmann.Write('boltzmann')
 canvas.Write('canvas')
 
 histo_fit_func_syst.Write('histo_fit_func_syst')

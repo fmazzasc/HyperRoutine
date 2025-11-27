@@ -262,6 +262,8 @@ if do_application:
                 data_hdl_eff = data_hdl_pt.apply_preselections(f'BDT_score >= {score}', inplace=False)
                 mc_hdl_eff = mc_hdl_pt.apply_preselections(f'BDT_score >= {score}', inplace=False)
                 signal_extraction = SignalExtraction(data_hdl_eff, mc_hdl_eff)
+                signal_extraction.pt_range = ptbin
+                signal_extraction.n_evts = utils.getNEvents(input_analysis_results_file, is_trigger)
                 signal_extraction.bkg_fit_func = bkg_func
                 signal_extraction.signal_fit_func = sig_func
                 signal_extraction.sigma_range_mc_to_data = sigma_range_mc_to_data
@@ -321,7 +323,7 @@ if do_yield:
 
         sig_functions = bin_struct['signal_fit_func']
         bkg_functions = bin_struct['bkg_fit_func']
-        bdt_eff_cut = bin_struct['bdt_eff_cut']
+        bdt_eff_cut = bin_struct['bdt_eff_cut'][ibin]
         bdt_syst_range = [bdt_eff_cut - bin_struct['bdt_syst_range'], bdt_eff_cut + bin_struct['bdt_syst_range']]
 
         syst_bin_list = []
