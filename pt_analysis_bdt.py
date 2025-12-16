@@ -280,6 +280,19 @@ if do_application:
                 else:
                     raw_counts_hist.SetBinContent(raw_counts_hist.FindBin(eff), 0)
                     raw_counts_hist.SetBinError(raw_counts_hist.FindBin(eff), 0)
+                
+                if eff == 0.75 and sig_func == 'dscb' and bkg_func == 'pol2':
+                ## plot training variables for data and MC as a function of the mass
+                    for var in training_variables:
+                        hist_data = ROOT.TH2D(f'h2_data_{var}_ptbin_{ibin}', f';fMassH3L;{var}', 20, 2.96, 3.04, 60, data_hdl_eff.get_data_frame()[var].min(), data_hdl_eff.get_data_frame()[var].max())
+                        utils.fill_th2_hist(hist_data, data_hdl_eff, 'fMassH3L', var)
+                        hist_mc = ROOT.TH2D(f'h2_mc_{var}_ptbin_{ibin}', f';fMassH3L;{var}', 20, 2.96, 3.04, 60, data_hdl_eff.get_data_frame()[var].min(), data_hdl_eff.get_data_frame()[var].max())
+                        utils.fill_th2_hist(hist_mc, mc_hdl_eff, 'fMassH3L', var)
+                        pt_dir.cd()
+                        hist_data.Write()
+                        hist_mc.Write()
+
+
             pt_dir.cd()
             raw_counts_hist.Write()
     output_file.Close()

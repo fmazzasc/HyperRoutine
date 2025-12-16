@@ -155,6 +155,9 @@ output.Close()
 
 ## get integrated yield from tomcca: multiply by x errors and sum
 n_ev = 0
+n_ev_gaus = 0
 for i in range(gr.GetN()):
     n_ev += gr.GetY()[i] * 2 * gr.GetErrorX(i)
-print(n_ev)
+    n_ev_gaus += gr_gaus.GetY()[i] * 2 * gr_gaus.GetErrorX(i)
+print("TomCCA integrated yield:", n_ev)
+print("TomCCA (gaus) integrated yield:", n_ev_gaus)

@@ -4,7 +4,7 @@
 void tomcca_pred()
 {
 //=========Macro generated from canvas: c/c
-//=========  (Tue Nov 25 14:49:37 2025) by ROOT version 6.32.06
+//=========  (Thu Nov 27 11:48:14 2025) by ROOT version 6.32.06
 
    gStyle->SetCanvasPreferGL(kTRUE);
 
@@ -157,22 +157,22 @@ void tomcca_pred()
    Double_t xAxis1[9] = {1.4, 1.7, 2, 2.3, 2.6, 3, 3.5, 4, 5}; 
    
    TH1D *h_default_spectrum_stat__2 = new TH1D("h_default_spectrum_stat__2","",8, xAxis1);
-   h_default_spectrum_stat__2->SetBinContent(1,8.247829e-09);
-   h_default_spectrum_stat__2->SetBinContent(2,5.962616e-09);
-   h_default_spectrum_stat__2->SetBinContent(3,3.545261e-09);
-   h_default_spectrum_stat__2->SetBinContent(4,2.890827e-09);
+   h_default_spectrum_stat__2->SetBinContent(1,8.25079e-09);
+   h_default_spectrum_stat__2->SetBinContent(2,5.962329e-09);
+   h_default_spectrum_stat__2->SetBinContent(3,3.544846e-09);
+   h_default_spectrum_stat__2->SetBinContent(4,2.696849e-09);
    h_default_spectrum_stat__2->SetBinContent(5,1.948387e-09);
-   h_default_spectrum_stat__2->SetBinContent(6,1.162564e-09);
-   h_default_spectrum_stat__2->SetBinContent(7,5.44081e-10);
-   h_default_spectrum_stat__2->SetBinContent(8,2.194767e-10);
-   h_default_spectrum_stat__2->SetBinError(1,1.33547e-09);
-   h_default_spectrum_stat__2->SetBinError(2,6.003175e-10);
-   h_default_spectrum_stat__2->SetBinError(3,3.86995e-10);
-   h_default_spectrum_stat__2->SetBinError(4,3.316834e-10);
+   h_default_spectrum_stat__2->SetBinContent(6,1.162503e-09);
+   h_default_spectrum_stat__2->SetBinContent(7,5.43874e-10);
+   h_default_spectrum_stat__2->SetBinContent(8,2.196745e-10);
+   h_default_spectrum_stat__2->SetBinError(1,1.335606e-09);
+   h_default_spectrum_stat__2->SetBinError(2,6.002967e-10);
+   h_default_spectrum_stat__2->SetBinError(3,3.86983e-10);
+   h_default_spectrum_stat__2->SetBinError(4,3.204483e-10);
    h_default_spectrum_stat__2->SetBinError(5,2.071638e-10);
-   h_default_spectrum_stat__2->SetBinError(6,1.360894e-10);
-   h_default_spectrum_stat__2->SetBinError(7,8.473881e-11);
-   h_default_spectrum_stat__2->SetBinError(8,4.082354e-11);
+   h_default_spectrum_stat__2->SetBinError(6,1.360708e-10);
+   h_default_spectrum_stat__2->SetBinError(7,8.543436e-11);
+   h_default_spectrum_stat__2->SetBinError(8,4.089876e-11);
    h_default_spectrum_stat__2->SetEntries(8);
    h_default_spectrum_stat__2->SetDirectory(nullptr);
    h_default_spectrum_stat__2->SetStats(0);
@@ -205,22 +205,22 @@ void tomcca_pred()
    Double_t xAxis2[9] = {1.4, 1.7, 2, 2.3, 2.6, 3, 3.5, 4, 5}; 
    
    TH1D *h_default_spectrum_syst__3 = new TH1D("h_default_spectrum_syst__3","",8, xAxis2);
-   h_default_spectrum_syst__3->SetBinContent(1,8.247829e-09);
-   h_default_spectrum_syst__3->SetBinContent(2,5.962616e-09);
-   h_default_spectrum_syst__3->SetBinContent(3,3.545261e-09);
-   h_default_spectrum_syst__3->SetBinContent(4,2.890827e-09);
+   h_default_spectrum_syst__3->SetBinContent(1,8.25079e-09);
+   h_default_spectrum_syst__3->SetBinContent(2,5.962329e-09);
+   h_default_spectrum_syst__3->SetBinContent(3,3.544846e-09);
+   h_default_spectrum_syst__3->SetBinContent(4,2.696849e-09);
    h_default_spectrum_syst__3->SetBinContent(5,1.948387e-09);
-   h_default_spectrum_syst__3->SetBinContent(6,1.162564e-09);
-   h_default_spectrum_syst__3->SetBinContent(7,5.44081e-10);
-   h_default_spectrum_syst__3->SetBinContent(8,2.194767e-10);
-   h_default_spectrum_syst__3->SetBinError(1,1.044835e-09);
-   h_default_spectrum_syst__3->SetBinError(2,6.525828e-10);
-   h_default_spectrum_syst__3->SetBinError(3,3.772095e-10);
-   h_default_spectrum_syst__3->SetBinError(4,3.237707e-10);
-   h_default_spectrum_syst__3->SetBinError(5,2.124291e-10);
-   h_default_spectrum_syst__3->SetBinError(6,1.245464e-10);
-   h_default_spectrum_syst__3->SetBinError(7,5.898308e-11);
-   h_default_spectrum_syst__3->SetBinError(8,2.567348e-11);
+   h_default_spectrum_syst__3->SetBinContent(6,1.162503e-09);
+   h_default_spectrum_syst__3->SetBinContent(7,5.43874e-10);
+   h_default_spectrum_syst__3->SetBinContent(8,2.196745e-10);
+   h_default_spectrum_syst__3->SetBinError(1,1.050012e-09);
+   h_default_spectrum_syst__3->SetBinError(2,6.524613e-10);
+   h_default_spectrum_syst__3->SetBinError(3,3.770843e-10);
+   h_default_spectrum_syst__3->SetBinError(4,3.048293e-10);
+   h_default_spectrum_syst__3->SetBinError(5,2.165225e-10);
+   h_default_spectrum_syst__3->SetBinError(6,1.249566e-10);
+   h_default_spectrum_syst__3->SetBinError(7,5.930809e-11);
+   h_default_spectrum_syst__3->SetBinError(8,2.578901e-11);
    h_default_spectrum_syst__3->SetEntries(8);
    h_default_spectrum_syst__3->SetDirectory(nullptr);
    h_default_spectrum_syst__3->SetStats(0);
