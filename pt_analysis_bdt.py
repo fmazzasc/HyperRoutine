@@ -95,6 +95,7 @@ signal_loss = config['signal_loss']
 syst_multi_trials = config['syst_multi_trials']
 absorption_syst = config['absorption_syst']
 br_syst = config['br_syst']
+lumi_syst = config['lumi_syst']
 
 print('**********************************')
 print('    Running pt_analysis_bdt.py')
@@ -393,7 +394,7 @@ if do_yield:
         ## compute syst error from variations
         syst_error = h_syst_variations.GetRMS()
         h_default_spectrum_syst.SetBinContent(ibin + 1, h_default_spectrum_stat.GetBinContent(ibin + 1))
-        total_syst = np.sqrt(syst_error**2 + (absorption_syst * h_default_spectrum_stat.GetBinContent(ibin + 1))**2 + (br_syst * h_default_spectrum_stat.GetBinContent(ibin + 1))**2)
+        total_syst = np.sqrt(syst_error**2 + (absorption_syst * h_default_spectrum_stat.GetBinContent(ibin + 1))**2 + (br_syst * h_default_spectrum_stat.GetBinContent(ibin + 1))**2 + (lumi_syst * h_default_spectrum_stat.GetBinContent(ibin + 1))**2)
         h_default_spectrum_syst.SetBinError(ibin + 1, total_syst)
 
     

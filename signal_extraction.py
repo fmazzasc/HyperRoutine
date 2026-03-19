@@ -27,7 +27,7 @@ class SignalExtraction:
         self.additional_pave_text = '' ## additional text to be added to the ALICE performance pave
         self.colliding_system = 'pp'
         self.energy = 13.6
-        pt_range = [0, 9]
+        self.pt_range = [0, 9]
 
         ## fit-related variables
         self.pdf = None

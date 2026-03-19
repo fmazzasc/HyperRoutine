@@ -25,14 +25,13 @@ input_analysis_results_file:
     # "/data3/fmazzasc/hyp_run_3/pp2025/ac/AnalysisResults.root"
   ]
 output_dir: "../results/2024_bdt/"
-output_file_suffix: "pp2024_sigscan"
+output_file_suffix: "pp2024_sigscan_newlumi"
 
 debug: True
 ## analysis options
 do_training: False
 do_application: True
 do_yield: True
-
 # general settings
 calibrate_he_momentum : True
 coal_based_mc: True
@@ -74,12 +73,13 @@ sigma_range_mc_to_data: [1.01, 1.1]
 
 # yield settings
 is_trigger: True
-event_loss: 0.76
+event_loss: 0.68
 signal_loss: 0.77
 absorption_histo_file: "../results/absorption/absorption_histos.root"
 syst_multi_trials: 500
 absorption_syst: 0.03
 br_syst: 0.1
+lumi_syst: 0.05
 
 
 
