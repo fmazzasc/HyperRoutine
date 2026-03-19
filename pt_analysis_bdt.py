@@ -171,6 +171,23 @@ else:
     mc_reco_hdl = mc_hdl.apply_preselections('fIsReco == 1', inplace=False)
     mc_hdl_evsel = mc_hdl
 
+# Fill nSigma vs pT histograms for data and MC
+output_file_nsigma = ROOT.TFile.Open(output_dir_name + f"/nsigma_plots_{output_file_suffix}.root", "RECREATE")
+h2_nsigma_he_pt_data = ROOT.TH2D('nSigmaHe_vs_pT_data', ';#it{p}_{T} (GeV/#it{c});n#sigma_{He}', 100, 0, 10, 100, -5, 5)
+h2_nsigma_he3_pt_data = ROOT.TH2D('nSigmaHe3_vs_pT_data', ';#it{p}_{T} (GeV/#it{c});n#sigma_{^{3}He}', 100, 0, 10, 100, -5, 5)
+h2_nsigma_he_pt_mc = ROOT.TH2D('nSigmaHe_vs_pT_mc', ';#it{p}_{T} (GeV/#it{c});n#sigma_{He}', 100, 0, 10, 100, -5, 5)
+h2_nsigma_he3_pt_mc = ROOT.TH2D('nSigmaHe3_vs_pT_mc', ';#it{p}_{T} (GeV/#it{c});n#sigma_{^{3}He}', 100, 0, 10, 100, -5, 5)
+utils.fill_th2_hist(h2_nsigma_he_pt_data, data_hdl, 'fPt', 'fNSigmaHe')
+utils.fill_th2_hist(h2_nsigma_he3_pt_data, data_hdl, 'fPt', 'fNSigmaHe3')
+utils.fill_th2_hist(h2_nsigma_he_pt_mc, mc_reco_hdl, 'fPt', 'fNSigmaHe')
+utils.fill_th2_hist(h2_nsigma_he3_pt_mc, mc_reco_hdl, 'fPt', 'fNSigmaHe3')
+output_file_nsigma.cd()
+h2_nsigma_he_pt_data.Write()
+h2_nsigma_he3_pt_data.Write()
+h2_nsigma_he_pt_mc.Write()
+h2_nsigma_he3_pt_mc.Write()
+output_file_nsigma.Close()
+
 preselections = utils.convert_sel_to_string(preselections)
 data_hdl.apply_preselections(preselections)
 mc_reco_hdl.apply_preselections(preselections)
@@ -440,8 +457,7 @@ if do_yield:
     output_yield_file.Close()
     print("** Yield calculation finished ** \n")
     print("----------------------------------")
-            
-        
 
 
-   
+
+

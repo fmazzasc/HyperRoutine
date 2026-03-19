@@ -93,6 +93,8 @@ output_file = ROOT.TFile.Open(f'{output_dir_name}/{output_file_name}.root', 'rec
 utils.correct_and_convert_df(data_hdl, calibrate_he3_pt=calibrate_he_momentum, isMC=False)
 utils.correct_and_convert_df(mc_hdl, calibrate_he3_pt=calibrate_he_momentum, isMC=True)
 
+
+
 # apply preselections + get absorption histo
 matter_sel = ''
 mc_matter_sel = ''
@@ -354,6 +356,19 @@ if do_syst:
         spectra_maker.del_dyn_members()
 
 output_dir_std.cd()
+
+h2_nsigma_he_pt_data = ROOT.TH2D('nSigmaHe_vs_pT_data', ';#it{p}_{T} (GeV/#it{c});n#sigma_{He}', 100, 0, 10, 100, -5, 5)
+h2_nsigma_he3_pt_data = ROOT.TH2D('nSigmaHe3_vs_pT_data', ';#it{p}_{T} (GeV/#it{c});n#sigma_{^{3}He}', 100, 0, 10, 100, -5, 5)
+h2_nsigma_he_pt_mc = ROOT.TH2D('nSigmaHe_vs_pT_mc', ';#it{p}_{T} (GeV/#it{c});n#sigma_{He}', 100, 0, 10, 100, -5, 5)
+h2_nsigma_he3_pt_mc = ROOT.TH2D('nSigmaHe3_vs_pT_mc', ';#it{p}_{T} (GeV/#it{c});n#sigma_{^{3}He}', 100, 0, 10, 100, -5, 5)
+utils.fill_th2_hist(h2_nsigma_he_pt_data, data_hdl, 'fPt', 'fNSigmaHe')
+utils.fill_th2_hist(h2_nsigma_he3_pt_data, data_hdl, 'fPt', 'fNSigmaHe3')
+utils.fill_th2_hist(h2_nsigma_he_pt_mc, mc_reco_hdl, 'fPt', 'fNSigmaHe')
+utils.fill_th2_hist(h2_nsigma_he3_pt_mc, mc_reco_hdl, 'fPt', 'fNSigmaHe3')
+h2_nsigma_he_pt_data.Write()
+h2_nsigma_he3_pt_data.Write()
+h2_nsigma_he_pt_mc.Write()
+h2_nsigma_he3_pt_mc.Write()
 
 # systematic uncetrainty fo each pt bin
 for i_bin in range(0, len(spectra_maker.bins) - 1):
