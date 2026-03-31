@@ -127,9 +127,9 @@ absorption_relative_syst = 0.03
 br_relative_syst = 0.08
 extrapolation_syst = yield_toy_levy.std()
 
-normalistion_relative_unc = 0.1
+normalisation_relative_unc = 0.05
 
-total_syst = np.sqrt((br_relative_syst * yield_final)**2 + (absorption_relative_syst * yield_final)**2 + (syst_sig_extr_rms)**2 + (fit_function_syst)**2 + (extrapolation_syst)**2 + (normalistion_relative_unc * yield_final)**2)
+total_syst = np.sqrt((br_relative_syst * yield_final)**2 + (absorption_relative_syst * yield_final)**2 + (syst_sig_extr_rms)**2 + (fit_function_syst)**2 + (extrapolation_syst)**2 + (normalisation_relative_unc * yield_final)**2)
 relative_syst = total_syst / yield_final
 
 
@@ -144,7 +144,7 @@ print(f'  - fit function choice: {fit_function_syst:.6e} ({fit_function_syst / y
 print(f'  - absorption correction: {(absorption_relative_syst * yield_final):.6e} ({absorption_relative_syst * 100:.2f} %)')
 print(f'  - branching ratio: {(br_relative_syst * yield_final):.6e} ({br_relative_syst * 100:.2f} %)')
 print(f'  - extrapolation to zero pT: {extrapolation_syst:.6e} ({extrapolation_syst / yield_final * 100:.2f} %)')
-print(f'  - normalisation uncertainty: {(normalistion_relative_unc * yield_final):.6e} ({normalistion_relative_unc * 100:.2f} %)')
+print(f'  - normalisation uncertainty: {(normalisation_relative_unc * yield_final):.6e} ({normalisation_relative_unc * 100:.2f} %)')
 print('--------------------------------------------')
 
 ## plot all the fit functions and the datapoint into a single canvas

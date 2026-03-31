@@ -158,6 +158,7 @@ class SignalExtraction:
             background_counts_error = f.getVal() * self.roo_dataset.sumEntries()*f.getError()/f.getVal()
 
         self.data_frame_fit = mass.frame(self.n_bins_data)
+        self.data_frame_fit.SetTitle('')
         self.data_frame_fit.SetName(self.data_frame_fit_name)
 
         self.roo_dataset.plotOn(self.data_frame_fit, ROOT.RooFit.Name('data'), ROOT.RooFit.DrawOption('p'))
@@ -188,16 +189,17 @@ class SignalExtraction:
         s_b_ratio_err = np.sqrt((signal_int_val_3s_error/signal_int_val_3s)**2 + (bkg_int_val_3s_error/bkg_int_val_3s)**2)*signal_int_val_3s/bkg_int_val_3s
 
         # add pave for stats
-        pinfo_vals = ROOT.TPaveText(0.632, 0.5, 0.932, 0.85, 'NDC')
+        pinfo_vals = ROOT.TPaveText(0.55, 0.5, 0.932, 0.85, 'NDC')
         pinfo_vals.SetBorderSize(0)
         pinfo_vals.SetFillStyle(0)
         pinfo_vals.SetTextAlign(11)
         pinfo_vals.SetTextFont(42)
+        pinfo_vals.AddText(f'{self.pt_range[0]} ' + '#leq #it{p}_{T} < ' + f'{self.pt_range[1]} ' + 'GeV/#it{c}, |y| < 1')
         pinfo_vals.AddText(f'Signal (S): {signal_counts:.0f} #pm {signal_counts_error:.0f}')
         pinfo_vals.AddText(f'S/B (3 #sigma): {signal_int_val_3s/bkg_int_val_3s:.1f} #pm {s_b_ratio_err:.1f}')
         pinfo_vals.AddText('S/#sqrt{S+B} (3 #sigma): ' + f'{significance:.1f} #pm {significance_err:.1f}')
-        pinfo_vals.AddText('#mu = ' + f'{mu_val*1e3:.2f} #pm {mu.getError()*1e3:.2f}' + ' MeV/#it{c}^{2}')
-        pinfo_vals.AddText('#sigma = ' + f'{sigma_val*1e3:.2f} #pm {sigma.getError()*1e3:.2f}' + ' MeV/#it{c}^{2}')
+        # pinfo_vals.AddText('#mu = ' + f'{mu_val*1e3:.2f} #pm {mu.getError()*1e3:.2f}' + ' MeV/#it{c}^{2}')
+        # pinfo_vals.AddText('#sigma = ' + f'{sigma_val*1e3:.2f} #pm {sigma.getError()*1e3:.2f}' + ' MeV/#it{c}^{2}')
         pinfo_vals.AddText('#chi^{2} / NDF = ' + f'{chi2_data:.3f} (NDF: {ndf_data})')
 
         ## add pave for ALICE performance
@@ -224,7 +226,7 @@ class SignalExtraction:
         if self.additional_pave_text != '':
             pinfo_alice.AddText(self.additional_pave_text)
 
-        legend = ROOT.TLegend(0.6, 0.2, 0.9, 0.45)
+        legend = ROOT.TLegend(0.55, 0.25, 0.85, 0.45)
         legend.SetBorderSize(0)
         legend.SetFillStyle(0)
         legend.SetTextFont(42)
@@ -237,7 +239,7 @@ class SignalExtraction:
         legend.GetListOfPrimitives().At(1).SetLineStyle(2)
         legend.GetListOfPrimitives().At(1).SetLineWidth(2)
         self.data_frame_fit.addObject(pinfo_vals)
-        self.data_frame_fit.addObject(pinfo_alice)
+        # self.data_frame_fit.addObject(pinfo_alice)
         self.data_frame_fit.addObject(legend)
 
         fit_stats = {'signal': [signal_counts, signal_counts_error],

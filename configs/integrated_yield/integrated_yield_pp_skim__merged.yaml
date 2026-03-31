@@ -1,4 +1,4 @@
-input_file_spectrum: "../results/2024_bdt/final_yield_pp2024_sigscan.root"
+input_file_spectrum: "../results/2024_bdt/final_yield_pp2024_sigscan_newlumi.root"
 histo_stat_name: "h_default_spectrum_stat"
 histo_syst_name: "h_default_spectrum_syst"
 output_file: "../results/2024_bdt/integrated_yield_sigscan.root"
