@@ -15,6 +15,66 @@ from utils import (
 )
 
 
+def draw_chi2_panel(results_by_energy, config):
+    """Draw reduced chi2 by model, using step histograms to compare energies."""
+    style = config['plot']
+    models = config['enabled_models']
+    tag = '_'.join(str(energy) for energy in results_by_energy)
+    canvas = ROOT.TCanvas(f'c_chi2_{tag}', 'Reduced chi2 by model', *style['canvas_size'])
+    for side, margin in style['margins'].items():
+        getattr(canvas, f'Set{side.capitalize()}Margin')(margin)
+    canvas.SetBottomMargin(max(style['margins']['bottom'], 0.18))
+    legend = ROOT.TLegend(0.18, 0.72, 0.94, 0.93)
+    legend.SetBorderSize(0)
+    legend.SetFillStyle(0)
+    legend.SetTextFont(style['font'])
+    legend.SetTextSize(min(style['label_size'], 0.03))
+    histograms = []
+    n_energies = len(results_by_energy)
+    energy_labels = {
+        523: '#splitline{B_{#Lambda} = 0.523 #pm 0.013 (stat.) #pm 0.075 (syst.) MeV}{[A1 Collaboration]}',
+        102: '#splitline{B_{#Lambda} = 0.102 #pm 0.063 (stat.) #pm 0.067 (syst.) MeV}{[ALICE Collaboration]}',
+    }
+    maximum = max(result.chi2 / result.ndf
+                  for results in results_by_energy.values() for result in results)
+    for index, (energy, results) in enumerate(results_by_energy.items()):
+        by_name = {result.name: result for result in results}
+        hist = ROOT.TH1D(f'h_reduced_chi2_{energy}', ';Model;#chi^{2}/ndf', len(models), 0., len(models))
+        hist.SetDirectory(0)
+        hist.SetStats(False)
+        for bin_index, name in enumerate(models, 1):
+            result = by_name[name]
+            hist.GetXaxis().SetBinLabel(bin_index, config['models'][name]['label'])
+            hist.SetBinContent(bin_index, result.chi2 / result.ndf)
+            hist.SetBinError(bin_index, 0.)
+        for axis in (hist.GetXaxis(), hist.GetYaxis()):
+            axis.SetTitleSize(style['title_size'])
+            axis.SetLabelSize(style['label_size'])
+            axis.SetTitleFont(style['font'])
+            axis.SetLabelFont(style['font'])
+        hist.GetXaxis().LabelsOption('h')
+        hist.GetYaxis().SetTitleOffset(style['y_title_offset'])
+        hist.SetMinimum(0.)
+        hist.SetMaximum(max(1., maximum) * 1.6)
+        color = (ROOT.kAzure + 1, ROOT.kOrange + 7)[index % 2]
+        hist.SetFillColor(color)
+        hist.SetLineColor(color)
+        if n_energies > 1:
+            hist.SetFillStyle(0)
+            hist.SetLineWidth(2)
+            hist.Draw('HIST' if index == 0 else 'HIST SAME')
+        else:
+            hist.SetBarWidth(0.8)
+            hist.SetBarOffset(0.1)
+            hist.Draw('BAR')
+        legend.AddEntry(hist, energy_labels.get(energy, f'B_{{#Lambda}} = {energy} keV'),
+                        'l' if n_energies > 1 else 'f')
+        histograms.append(hist)
+    legend.Draw()
+    canvas.RedrawAxis()
+    return canvas, histograms, legend
+
+
 def run_analysis(config, *, chi2_only=False):
     """Run with a resolved config from load_config(); return results by energy."""
     ROOT.gROOT.SetBatch(True)
@@ -120,6 +180,7 @@ def run_analysis(config, *, chi2_only=False):
                 if not central_ratios:
                     print('Central model ratio: no non-reference models selected; skipping panel.')
             canvases = []
+            chi2_histograms = []
             try:
                 for panel, graphs in (('spectrum', model_graphs), ('ratio', ratio_graphs), ('model_ratio', central_ratios)):
                     if config['plot'][panel]['enabled'] and graphs:
@@ -127,6 +188,11 @@ def run_analysis(config, *, chi2_only=False):
                         canvases.append((canvas, objects))
                         for extension in config['output']['formats']:
                             canvas.SaveAs(str(output_dir / f'{config["output"][panel + "_name"]}.{extension}'))
+                if results:
+                    canvas, chi2_histograms, legend = draw_chi2_panel({energy: results}, config)
+                    canvases.append((canvas, [*chi2_histograms, legend]))
+                    for extension in config['output']['formats']:
+                        canvas.SaveAs(str(output_dir / f'chi2_models.{extension}'))
                 if config['output']['root_file']:
                     output = open_root_file(output_dir / config['output']['root_file'], 'RECREATE')
                     try:
@@ -137,6 +203,8 @@ def run_analysis(config, *, chi2_only=False):
                             fit.Write('levy')
                         for graph, _ in model_graphs + ratio_graphs + central_ratios:
                             graph.Write()
+                        for hist in chi2_histograms:
+                            hist.Write()
                         for canvas, _ in canvases:
                             canvas.Write()
                         ROOT.TObjString(json.dumps(config)).Write('analysis_config')
@@ -147,6 +215,24 @@ def run_analysis(config, *, chi2_only=False):
                     canvas.Close()
     finally:
         model_file.Close()
+    if not chi2_only and len(all_results) == 2 and all(all_results.values()):
+        output_dir = Path(config['output']['directory'])
+        canvas, histograms, legend = draw_chi2_panel(all_results, config)
+        try:
+            for extension in config['output']['formats']:
+                canvas.SaveAs(str(output_dir / f'chi2_binding_energies.{extension}'))
+            if config['output']['root_file']:
+                output = open_root_file(output_dir / config['output']['root_file'], 'RECREATE')
+                try:
+                    output.cd()
+                    for hist in histograms:
+                        hist.Write()
+                    canvas.Write()
+                    ROOT.TObjString(json.dumps(config)).Write('analysis_config')
+                finally:
+                    output.Close()
+        finally:
+            canvas.Close()
     return all_results
 
 

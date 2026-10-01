@@ -54,6 +54,16 @@ Each energy gets a subdirectory containing plots, ROOT objects and
 effective analysis settings. The ROOT file also stores the resolved config.
 The supplied selection preserves both Congleton variants and excludes Gaussian.
 
+When chi2 is enabled, each energy also gets `chi2_models.pdf/png`, showing
+chi2/ndf with the enabled models on the x-axis. Runs with two binding energies
+add `chi2_binding_energies.pdf/png` in the output directory, with two overlaid,
+unfilled step histograms. The energy legends include the statistical and
+systematic measurement uncertainties and collaboration names for 102 and
+523 keV, expressed in MeV. These plots follow `output.formats`; their histograms
+and canvases are saved in the configured ROOT filename (per-energy files for
+individual plots, and a file in the output directory for the comparison).
+`--chi2-only` skips all plots and ROOT output as before.
+
 `plot.model_ratio` adds `ratio_models_central.pdf/png`: central predictions of
 each enabled model divided by `reference_model` (default `Congleton`) versus
 pT. It retains absolute normalizations and draws no uncertainty bands or nuisance

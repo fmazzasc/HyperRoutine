@@ -16,7 +16,7 @@
     "chi2_file": "chi2_results.json"
   },
   "binding_energies": [102, 523],
-  "enabled_models": ["Congleton", "CongletonHwH"],
+  "enabled_models": ["Gaussian", "Congleton", "CongletonHwH"],
   "models": {
     "Congleton": {"label": "Congleton", "color": 632},
     "CongletonHwH": {"label": "Congleton H.H. tune", "color": 807},
