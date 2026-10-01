@@ -12,7 +12,7 @@ input_analysis_results_file:
     #  "/data3/fmazzasc/hyp_run_3/pp2023/skimmed/AnalysisResults.root",
   ]
 output_dir: "../results/2024_analyse_tree/"
-output_file: "HypertritonResults_24_sverter_pass1"
+output_file: "HypertritonResults_24_sverter_noclus"
 selection:
   {
     # "fDcaV0Daug": "abs(fDcaV0Daug) < 0.1",
@@ -20,11 +20,11 @@ selection:
     # "fTrackedClSize": "fTrackedClSize > 0",
     # "fDcaPi": "abs(fDcaPi) > 0.05",
     # "fTPCChi2He": "fTPCChi2He > 0.5",
-    # "fCosPA": "fCosPA > 0.9995",
+    "fCosPA": "fCosPA > 0.999",
     # "fNSigmaHe": "fNSigmaHe > -2",
     # # "fTPCsignalPi": "fTPCsignalPi < 1000.",
     # "fTPCmomHe": "fTPCmomHe > 0.5",
-    "fAvgClSizeCosLambda": "fAvgClSizeCosLambda > 5",
+    # "fAvgClSizeCosLambda": "fAvgClSizeCosLambda > 5",
 
   }
 is_matter: "antimatter"

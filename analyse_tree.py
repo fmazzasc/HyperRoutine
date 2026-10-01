@@ -70,7 +70,7 @@ hCosPA = ROOT.TH1F('hCosPA', r';cos(#theta_{PA})', 500, 0.95, 1)
 hNTPCclus = ROOT.TH1F('hNTPCclus', r';n TPC clusters', 80, 79.5, 159.5)
 h2NTPCclusPt = ROOT.TH2F('h2NTPCclusPt', r';#it{p}_{T} (GeV/#it{c}); n TPC clusters', 50, 0, 10, 80, 79.5, 159.5)
 
-hMass3LH = ROOT.TH1F('h_3lh_mass', r'; m({}^{3}_{#Lambda}H) (GeV/#it{c})', 40, 2.96, 3.04)
+hMass3LH = ROOT.TH1F('h_3lh_mass', r'; m({}^{3}_{#Lambda}H) (GeV/#it{c})', 60, 2.96, 3.04)
 hMass4LH = ROOT.TH1F('h_4lh_mass', r';  m({}^{4}_{#Lambda}H) (GeV/#it{c^{2}})', 32, 3.87, 3.98)
 h2Mass3LHVvsMass4LH = ROOT.TH2F('h2Mass3LHVvsMass4LH', r'; m({}^{3}_{#Lambda}H) (GeV/#it{c}); m({}^{4}_{#Lambda}H) (GeV/#it{c})', 40, 2.96, 3.04, 32, 3.87, 3.98)
 hPtRec = ROOT.TH1F('hPtRec', r';#it{p}_{T} (GeV/#it{c})', 8, np.array([1.4, 1.7, 2., 2.3, 2.6, 3, 3.5, 4., 5], dtype=np.float64))
@@ -148,7 +148,7 @@ utils.correct_and_convert_df(df, calibrate_he_momentum, mc, is_h4l)
 
 ############# Apply pre-selections to MC #############
 if mc:
-    mc_pre_sels = 'fIsSurvEvSel==True'
+    mc_pre_sels = 'fIsSurvEvSel==True and fIsSignal==True'
     spectra_file = ROOT.TFile.Open('utils/heliumSpectraMB.root')
     he3_spectrum = spectra_file.Get('fCombineHeliumSpecLevyFit_0-100')
     spectra_file.Close()
@@ -168,6 +168,10 @@ if mc:
     utils.fill_th1_hist(hRadGen, df, 'fGenDecRad')
     ## now we select only the reconstructed particles
     df.query('fIsReco==True', inplace=True)
+    ## print the first 10 entries of the dataframe
+    print('First 10 entries of the dataframe (pt and genpt):')
+    print(df.head(10)[['fPt', 'fAbsGenPt', 'fPtHe3', 'fPtPi', 'fGenPt']])
+
 
 ############# Apply pre-selections to data #############
 else:

@@ -3,6 +3,8 @@ ROOT.gROOT.SetBatch(True)
 
 REMOVE_PAVE_NAMES = ["title"]
 REMOVE_PAVE_CLASSES = ["TPaveText"]
+TEXT_SIZE_PIXELS = 28
+X_AXIS_RANGE = (2.96, 3.034)
 
 signal_extraction_file = ROOT.TFile("/home/fmazzasc/run3/results/2024_bdt/signal_extraction_pp2024_sigscan_newlumi.root")
 
@@ -23,7 +25,6 @@ def add_alice_pave(pad):
     pinfo_alice.SetTextFont(42)
     pinfo_alice.AddText("ALICE")
     pinfo_alice.AddText("pp, #sqrt{#it{s}} = 13.6 TeV")
-    pinfo_alice.AddText("#it{N}_{evt} = 1.9 #times 10^{12}")
     pinfo_alice.AddText("{}^{3}_{#bar{#Lambda}}#bar{H} #rightarrow ^{3}#bar{He} + #pi^{+}")
     pinfo_alice.Draw()
     return pinfo_alice
@@ -49,6 +50,32 @@ def inspect_and_prune_paves(pad, pad_label):
     pad.Modified()
     pad.Update()
 
+
+def style_pad_primitives(pad):
+    primitives = pad.GetListOfPrimitives()
+
+    for obj in primitives:
+        if obj.InheritsFrom("TPave") or obj.InheritsFrom("TLegend"):
+            obj.SetTextSizePixels(TEXT_SIZE_PIXELS)
+
+    pad.Modified()
+    pad.Update()
+
+
+def build_single_canvas(name, title, frame, left_margin, right_margin):
+    canvas = ROOT.TCanvas(name, title, 800, 700)
+    canvas.cd()
+    ROOT.gPad.SetMargin(left_margin, right_margin, 0.15, 0.08)
+    frame.Draw()
+    canvas.Update()
+    inspect_and_prune_paves(canvas, name)
+    style_pad_primitives(canvas)
+    return canvas
+
+
+cv.GetXaxis().SetRangeUser(*X_AXIS_RANGE)
+cv2.GetXaxis().SetRangeUser(*X_AXIS_RANGE)
+
 multi_pad = ROOT.TCanvas("multi_pad", "Invariant mass fits", 1600, 700)
 multi_pad.Divide(2, 1)
 
@@ -64,8 +91,17 @@ multi_pad.Update()
 
 inspect_and_prune_paves(multi_pad.GetPad(1), "pad 1")
 inspect_and_prune_paves(multi_pad.GetPad(2), "pad 2")
-alice_pave = add_alice_pave(multi_pad.GetPad(1))
+style_pad_primitives(multi_pad.GetPad(1))
+style_pad_primitives(multi_pad.GetPad(2))
+# alice_pave = add_alice_pave(multi_pad.GetPad(1))
 multi_pad.GetPad(1).Modified()
 multi_pad.GetPad(1).Update()
 
-multi_pad.SaveAs("invariant_mass_fits.root")
+single_pad_1 = build_single_canvas("single_pad_1", "Invariant mass fit pt bin 4", cv, 0.15, 0.05)
+single_pad_2 = build_single_canvas("single_pad_2", "Invariant mass fit pt bin 5", cv2, 0.15, 0.05)
+
+output_file = ROOT.TFile("invariant_mass_fits.root", "RECREATE")
+multi_pad.Write()
+single_pad_1.Write()
+single_pad_2.Write()
+output_file.Close()

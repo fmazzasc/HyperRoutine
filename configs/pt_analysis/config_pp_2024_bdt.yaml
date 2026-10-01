@@ -31,7 +31,7 @@ debug: True
 ## analysis options
 do_training: False
 do_application: True
-do_yield: True
+do_yield: False
 # general settings
 calibrate_he_momentum : True
 coal_based_mc: True

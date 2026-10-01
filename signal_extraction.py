@@ -194,9 +194,12 @@ class SignalExtraction:
         pinfo_vals.SetFillStyle(0)
         pinfo_vals.SetTextAlign(11)
         pinfo_vals.SetTextFont(42)
-        pinfo_vals.AddText(f'{self.pt_range[0]} ' + '#leq #it{p}_{T} < ' + f'{self.pt_range[1]} ' + 'GeV/#it{c}, |y| < 1')
+        pinfo_vals.SetTextSize(0.05)
+        pinfo_vals.AddText("ALICE")
+        pinfo_vals.AddText("pp, #sqrt{#it{s}} = 13.6 TeV")
+        pinfo_vals.AddText(f'{self.pt_range[0]} ' + '#leq #it{p}_{T} < ' + f'{self.pt_range[1]} ' + 'GeV/#it{c}')
         pinfo_vals.AddText(f'Signal (S): {signal_counts:.0f} #pm {signal_counts_error:.0f}')
-        pinfo_vals.AddText(f'S/B (3 #sigma): {signal_int_val_3s/bkg_int_val_3s:.1f} #pm {s_b_ratio_err:.1f}')
+        # pinfo_vals.AddText(f'S/B (3 #sigma): {signal_int_val_3s/bkg_int_val_3s:.1f} #pm {s_b_ratio_err:.1f}')
         pinfo_vals.AddText('S/#sqrt{S+B} (3 #sigma): ' + f'{significance:.1f} #pm {significance_err:.1f}')
         # pinfo_vals.AddText('#mu = ' + f'{mu_val*1e3:.2f} #pm {mu.getError()*1e3:.2f}' + ' MeV/#it{c}^{2}')
         # pinfo_vals.AddText('#sigma = ' + f'{sigma_val*1e3:.2f} #pm {sigma.getError()*1e3:.2f}' + ' MeV/#it{c}^{2}')
@@ -221,7 +224,7 @@ class SignalExtraction:
         self.n_evts = self.n_evts / 10**(exponent)
         pinfo_alice.AddText('#it{N}_{evt} = ' + f'{self.n_evts:.1f} ' + '#times 10^{' + f'{exponent:.0f}' + '}') 
         pinfo_alice.AddText(decay_string)
-        pinfo_alice.AddText(f'{self.pt_range[0]} ' + '#leq #it{p}_{T} < ' + f'{self.pt_range[1]} ' + 'GeV/#it{c}, |y| < 1')
+        pinfo_alice.AddText(f'{self.pt_range[0]} ' + '#leq #it{p}_{T} < ' + f'{self.pt_range[1]} ' + 'GeV/#it{c}')
 
         if self.additional_pave_text != '':
             pinfo_alice.AddText(self.additional_pave_text)
