@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Plot spectra and data/model ratios and evaluate ToMCCA covariance chi2."""
 import argparse
+import copy
 from dataclasses import asdict
 import json
 from pathlib import Path
@@ -13,6 +14,11 @@ from utils import (
     fit_levy, load_config, load_hist, make_error_envelope_graphs,
     open_root_file, print_result, validate_data_histograms,
 )
+
+
+def binding_energy_label(energy, config):
+    """Legend text for a binding energy, from config or a plain value in MeV."""
+    return config['binding_energy_labels'].get(str(energy), f'B_{{#Lambda}} = {energy / 1000:.3f} MeV')
 
 
 def draw_chi2_panel(results_by_energy, config):
@@ -31,10 +37,6 @@ def draw_chi2_panel(results_by_energy, config):
     legend.SetTextSize(min(style['label_size'], 0.03))
     histograms = []
     n_energies = len(results_by_energy)
-    energy_labels = {
-        523: '#splitline{B_{#Lambda} = 0.523 #pm 0.013 (stat.) #pm 0.075 (syst.) MeV}{[A1 Collaboration]}',
-        102: '#splitline{B_{#Lambda} = 0.102 #pm 0.063 (stat.) #pm 0.067 (syst.) MeV}{[ALICE Collaboration]}',
-    }
     maximum = max(result.chi2 / result.ndf
                   for results in results_by_energy.values() for result in results)
     for index, (energy, results) in enumerate(results_by_energy.items()):
@@ -67,12 +69,49 @@ def draw_chi2_panel(results_by_energy, config):
             hist.SetBarWidth(0.8)
             hist.SetBarOffset(0.1)
             hist.Draw('BAR')
-        legend.AddEntry(hist, energy_labels.get(energy, f'B_{{#Lambda}} = {energy} keV'),
+        legend.AddEntry(hist, binding_energy_label(energy, config),
                         'l' if n_energies > 1 else 'f')
         histograms.append(hist)
     legend.Draw()
     canvas.RedrawAxis()
     return canvas, histograms, legend
+
+
+def draw_binding_energy_spectra(spectra_by_model, data_stat, data_syst, fit, config):
+    """Save one spectrum per model, overlaying its bands for all binding energies."""
+    output_dir = Path(config['output']['directory'])
+    panel = config['plot']['spectrum_binding']
+    tag = '_'.join(str(energy) for energy in config['binding_energies'])
+    for name, entries in spectra_by_model.items():
+        graphs = []
+        for index, (energy, graph) in enumerate(entries):
+            band = graph.Clone(f'{name}_{energy}_binding_comparison')
+            color = panel['colors'][index % len(panel['colors'])]
+            band.SetFillColorAlpha(color, panel['fill_alpha'])
+            band.SetLineColor(color)
+            graphs.append((band, binding_energy_label(energy, config)))
+        # Reuse the spectrum panel, overriding only its legend and annotation layout.
+        panel_config = copy.deepcopy(config)
+        panel_config['plot']['spectrum'].update(
+            legend_header=panel['legend_header'].replace('{model}', config['models'][name]['label']),
+            **{key: panel[key] for key in ('annotation_box', 'data_legend_box', 'model_legend_box',
+                                           'model_legend_text_size', 'model_draw_option',
+                                           'auto_y_padding')},
+        )
+        ticks = ROOT.gStyle.GetPadTickX(), ROOT.gStyle.GetPadTickY()
+        if panel['ticks']:
+            ROOT.gStyle.SetPadTickX(1)
+            ROOT.gStyle.SetPadTickY(1)
+        try:
+            canvas, objects = draw_panel('spectrum', tag, data_stat, data_syst, graphs, fit, panel_config)
+        finally:
+            ROOT.gStyle.SetPadTickX(ticks[0])
+            ROOT.gStyle.SetPadTickY(ticks[1])
+        try:
+            for extension in config['output']['formats']:
+                canvas.SaveAs(str(output_dir / f'{config["output"]["spectrum_binding_name"]}_{name}.{extension}'))
+        finally:
+            canvas.Close()
 
 
 def run_analysis(config, *, chi2_only=False):
@@ -110,6 +149,7 @@ def run_analysis(config, *, chi2_only=False):
     if chi_options['norm_rel_unc'] is None:
         chi_options['norm_rel_unc'] = config['model']['norm_rel_unc']
     all_results = {}
+    spectra_by_model = {name: [] for name in config['enabled_models']}
     model_file = open_root_file(config['input']['model_file'])
     try:
         for energy in config['binding_energies']:
@@ -121,6 +161,7 @@ def run_analysis(config, *, chi2_only=False):
                 style = config['models'][name]
                 graph = build_model_band(model_file, name, energy, style['color'], **model_options)
                 model_graphs.append((graph, style['label']))
+                spectra_by_model[name].append((energy, graph))
                 if not chi2_only and config['plot']['ratio']['enabled']:
                     low, high = make_error_envelope_graphs(graph)
                     ratio = build_ratio_graphs(
@@ -215,6 +256,8 @@ def run_analysis(config, *, chi2_only=False):
                     canvas.Close()
     finally:
         model_file.Close()
+    if not chi2_only and config['plot']['spectrum_binding']['enabled'] and len(config['binding_energies']) > 1:
+        draw_binding_energy_spectra(spectra_by_model, data_stat, data_syst, fit, config)
     if not chi2_only and len(all_results) == 2 and all(all_results.values()):
         output_dir = Path(config['output']['directory'])
         canvas, histograms, legend = draw_chi2_panel(all_results, config)

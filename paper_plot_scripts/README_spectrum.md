@@ -130,3 +130,22 @@ For the complete workflow from Python, use
 `spectrum.run_analysis(utils.load_config("my_config.json"))`.
 
 Numerical tests: `python3 -m unittest test_spectrum`.
+
+## Binding-energy comparison spectra
+
+With more than one entry in `binding_energies` (and `plot.spectrum_binding.enabled`),
+the output directory also gets `spectrum_binding_energies_<model>.pdf/png` for every
+enabled model: the data, the Levy fit and that model's bands for all binding
+energies on one canvas. The legend header is `plot.spectrum_binding.legend_header`
+(`{model}` becomes the model label) and each entry is that energy's label.
+Band colors follow `plot.spectrum_binding.colors` (ROOT color codes, used in
+energy order); the model legend, data legend and ALICE label positions are set there too, the base name is
+`output.spectrum_binding_name`, and the rest of the styling is shared with
+`plot.spectrum`. The same block also sets `model_draw_option` (default `3L`:
+band plus central line), its own `fill_alpha`, `auto_y_padding` (headroom above
+the bands for the legend, log scale) and `ticks` (ticks on all four sides).
+
+`binding_energy_labels` maps an energy in keV (as a string) to its TLatex legend
+text, with measurement uncertainties and source. It is used here and in the chi2
+plots. Energies without an entry get a plain `B_{#Lambda} = x.xxx MeV`. A custom
+config replaces the whole map.

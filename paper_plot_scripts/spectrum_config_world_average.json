@@ -1,0 +1,8 @@
+{
+  "binding_energies": [176, 523],
+  "binding_energy_labels": {
+    "176": "B_{#Lambda} = 0.176^{+0.037}_{#minus0.036} MeV [World average]",
+    "523": "B_{#Lambda} = 0.523 #pm 0.013 (stat.) #pm 0.075 (syst.) MeV [A1]"
+  },
+  "output": {"directory": "world_average"}
+}

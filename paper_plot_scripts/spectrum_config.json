@@ -1,7 +1,7 @@
 {
   "input": {
     "spectrum_file": "/home/fmazzasc/run3/results/2024_bdt/final_yield_pp2024_sigscan_newlumi.root",
-    "model_file": "../utils/HypertritonHistograms.root",
+    "model_file": "../utils/HypertritonHistogramsCombined.root",
     "stat_hist": "h_default_spectrum_stat",
     "syst_hist": "h_default_spectrum_syst",
     "model_histogram_template": "Hypertriton_Wigner:{model}_{energy}{variation}_pt"
@@ -11,12 +11,17 @@
     "formats": ["pdf", "png"],
     "spectrum_name": "spectrum_with_tomcca",
     "ratio_name": "ratio_data_tomcca",
+    "spectrum_binding_name": "spectrum_binding_energies",
     "model_ratio_name": "ratio_models_central",
     "root_file": "spectra_inel.root",
     "chi2_file": "chi2_results.json"
   },
   "binding_energies": [102, 523],
-  "enabled_models": ["Gaussian", "Congleton", "CongletonHwH"],
+  "binding_energy_labels": {
+    "102": "B_{#Lambda} = 0.102 #pm 0.063 (stat.) #pm 0.067 (syst.) MeV [ALICE]",
+    "523": "B_{#Lambda} = 0.523 #pm 0.013 (stat.) #pm 0.075 (syst.) MeV [A1]"
+  },
+  "enabled_models": ["Congleton"],
   "models": {
     "Congleton": {"label": "Congleton", "color": 632},
     "CongletonHwH": {"label": "Congleton H.H. tune", "color": 807},
@@ -76,6 +81,19 @@
       "model_legend_box": [0.19, 0.15, 0.65, 0.36],
       "model_legend_text_size": 0.045,
       "legend_header": "Coalescence (ToMCCA)"
+    },
+    "spectrum_binding": {
+      "enabled": true,
+      "legend_header": "Coalescence, ToMCCA #minus {model}",
+      "annotation_box": [0.19, 0.27, 0.48, 0.38],
+      "data_legend_box": [0.19, 0.16, 0.49, 0.29],
+      "model_legend_box": [0.19, 0.745, 0.95, 0.93],
+      "auto_y_padding": 12.0,
+      "model_legend_text_size": 0.041,
+      "model_draw_option": "3",
+      "fill_alpha": 0.35,
+      "ticks": true,
+      "colors": [418, 807, 616, 632]
     },
     "model_ratio": {
       "enabled": true,

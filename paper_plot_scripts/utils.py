@@ -40,7 +40,7 @@ def load_config(filename):
             if isinstance(default[key], dict):
                 if not isinstance(value, dict):
                     raise ValueError(f'{location} must be an object')
-                if location in ('levy_fit.initial_parameters', 'levy_fit.parameter_limits'):
+                if location in ('levy_fit.initial_parameters', 'levy_fit.parameter_limits', 'binding_energy_labels'):
                     merged[key] = value
                 else:
                     merged[key] = merge(default[key], value, location)
@@ -107,7 +107,14 @@ def validate_config(config):
     formats = config['output']['formats']
     if any(fmt not in ('pdf', 'png', 'svg', 'eps', 'jpg') for fmt in formats):
         raise ValueError('output.formats supports pdf, png, svg, eps, jpg')
-    for key in ('spectrum_name', 'ratio_name', 'model_ratio_name', 'root_file', 'chi2_file'):
+    colors = config['plot']['spectrum_binding']['colors']
+    if not 0 <= config['plot']['spectrum_binding']['fill_alpha'] <= 1:
+        raise ValueError('plot.spectrum_binding.fill_alpha must be in [0, 1]')
+    if not colors or any(not isinstance(color, int) or color < 0 for color in colors):
+        raise ValueError('plot.spectrum_binding.colors must be a nonempty list of ROOT colors')
+    if any(not isinstance(label, str) for label in config['binding_energy_labels'].values()):
+        raise ValueError('binding_energy_labels values must be strings')
+    for key in ('spectrum_name', 'spectrum_binding_name', 'ratio_name', 'model_ratio_name', 'root_file', 'chi2_file'):
         value = config['output'][key]
         if value is None and key in ('root_file', 'chi2_file'):
             continue
@@ -212,7 +219,10 @@ def draw_panel(name, energy, data_stat, data_syst, graphs, fit, config):
         keep.append(line)
     leg = legend(panel['model_legend_box'], panel['model_legend_text_size'], panel['legend_header'])
     for graph, label in graphs:
-        leg.AddEntry(graph, label, 'L' if name == 'model_ratio' else 'F')
+        option = 'L' if name == 'model_ratio' else 'F'
+        if name == 'spectrum' and 'L' in panel['model_draw_option']:
+            option = 'LF'
+        leg.AddEntry(graph, label, option)
     leg.Draw()
     annotation = ROOT.TPaveText(*panel['annotation_box'], 'NDC')
     annotation.SetBorderSize(0)
